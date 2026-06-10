@@ -3,7 +3,7 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" id="theme-color-meta" content="#52c234">
 <script>
   (function() {
@@ -64,17 +64,18 @@
 body {
   font-family: 'Segoe UI', Tahoma, sans-serif; color: var(--text-primary);
   min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; 
-  align-items: center; justify-content: flex-start; padding: 12px 10px 32px; 
+  align-items: center; justify-content: flex-start; 
+  padding: max(12px, env(safe-area-inset-top)) 10px 32px; 
   overflow-y: auto; -webkit-overflow-scrolling: touch;
 }
 
-.bg-layer { position: fixed; inset: 0; z-index: -1; transition: opacity 0.4s ease-in-out; }
-.bg-chandarana { background: linear-gradient(135deg, #52c234 0%, #52c234 65%, #1a73e8 100%); opacity: 1; }
-.bg-carrefour { background: linear-gradient(135deg, #1a73e8 0%, #1a73e8 65%, #52c234 100%); opacity: 0; }
+.bg-layer { position: fixed; inset: 0; z-index: -1; transition: opacity 0.5s ease-in-out; }
+.bg-chandarana { background: linear-gradient(135deg, #52c234 0%, #52c234 75%, #1a73e8 100%); opacity: 1; }
+.bg-carrefour { background: linear-gradient(135deg, #1a73e8 0%, #1a73e8 75%, #52c234 100%); opacity: 0; }
 
 @media (prefers-color-scheme: dark) {
-  .bg-chandarana { background: linear-gradient(135deg, #064e3b 0%, #064e3b 65%, #1e3a8a 100%); }
-  .bg-carrefour { background: linear-gradient(135deg, #1e3a8a 0%, #1e3a8a 65%, #064e3b 100%); }
+  .bg-chandarana { background: linear-gradient(135deg, #064e3b 0%, #064e3b 75%, #1e3a8a 100%); }
+  .bg-carrefour { background: linear-gradient(135deg, #1e3a8a 0%, #1e3a8a 75%, #064e3b 100%); }
 }
 
 body.theme-chandarana .bg-chandarana { opacity: 1; }
@@ -120,7 +121,22 @@ button { width: 100%; height: 44px; padding: 0 12px; border-radius: 10px; border
 button:active { transform: scale(0.98); }
 button.primary { background: var(--dynamic-primary); color: #ffffff; height: 52px; font-size: 16px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15); transition: background 0.4s ease, transform 0.1s; }
 button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-#preview { width: 58px; height: 58px; object-fit: cover; border-radius: 50%; border: 3px solid var(--success-color); display: none; margin: 4px auto 0; background: var(--input-bg); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.4s ease; cursor: pointer; transform-origin: center right;}
+
+/* Exploding Photo Preview Styles */
+#preview { 
+  width: 58px; height: 58px; object-fit: cover; border-radius: 50%; border: 3px solid var(--success-color); 
+  display: none; margin: 4px auto 0; background: var(--input-bg); cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+#preview.enlarged {
+  width: 45vh; height: 45vh; max-width: 90vw; max-height: 90vw; position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%); z-index: 9999; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  border-width: 5px;
+}
+#previewOverlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9998; opacity: 0; transition: opacity 0.4s ease;
+}
+#previewOverlay.show { opacity: 1; display: block; }
 
 .msg { font-size: 12px; font-weight: 700; margin-top: 6px; min-height: 20px; color: var(--text-tertiary); display: flex; align-items: center; transition: color 0.2s; }
 .msg.success { color: var(--success-color); font-size: 13px; }
@@ -137,35 +153,32 @@ button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 .success-warning { background: var(--warning-bg); border: 1.5px solid var(--warning-border); border-left: 4px solid var(--error-color); border-radius: 12px; padding: 14px 16px; width: 100%; text-align: left; font-size: 13px; font-weight: 700; color: var(--warning-text); display: none; animation: bounceIn 0.7s ease 0.2s backwards; }
 .success-back { width: 100%; height: 48px; background: var(--button-secondary-bg); color: var(--dynamic-primary); border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px; }
 
-#guideModal { display: none; position: fixed; inset: 0; background: var(--modal-overlay); z-index: 999; flex-direction: column; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+#guideModal { display: none; position: fixed; inset: 0; background: var(--modal-overlay); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
 #guideModal .modal-box { background: var(--bg-primary); padding: 28px; border-radius: 16px; text-align: center; max-width: 350px; width: 100%; }
 #guideModal .modal-box h3 { color: var(--error-color); margin: 10px 0 16px; font-size: 20px; }
 .modal-instructions { background: var(--input-bg); color: var(--text-secondary); padding: 16px; border-radius: 10px; margin-bottom: 14px; font-size: 13px; line-height: 1.6; text-align: left; }
 
-/* Fullscreen Camera Styles */
-#videoContainer {
-  display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background: #000; z-index: 9999; flex-direction: column;
+/* Inline Half-Screen Camera Styles */
+#videoContainerWrapper {
+  width: 100%; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
+  max-height: 0; border-radius: 12px; position: relative; margin-bottom: 0;
+}
+#videoContainerWrapper.expanded {
+  max-height: 50vh; margin-bottom: 12px;
 }
 #cameraVideo {
-  width: 100%; height: 100%; object-fit: cover;
+  width: 100%; height: 50vh; object-fit: cover; background: #000; display: block;
 }
 .camera-overlay {
-  position: absolute; bottom: 40px; left: 0; width: 100%;
-  display: flex; justify-content: center; align-items: center; gap: 40px;
+  position: absolute; bottom: 15px; left: 0; width: 100%; display: flex; justify-content: center;
 }
 #captureBtn {
-  width: 70px; height: 70px; border-radius: 50%; background: rgba(255, 255, 255, 0.3);
-  border: 4px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.4); 
+  border: 4px solid white; cursor: pointer; display: flex; justify-content: center; align-items: center; 
   transition: transform 0.2s;
 }
-#captureBtn::after { content: ''; width: 54px; height: 54px; background: white; border-radius: 50%; }
+#captureBtn::after { content: ''; width: 44px; height: 44px; background: white; border-radius: 50%; }
 #captureBtn:active { transform: scale(0.9); }
-#closeCameraBtn {
-  position: absolute; top: 20px; right: 20px; color: white; background: rgba(0,0,0,0.5);
-  border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-}
 </style>
 </head>
 
@@ -185,6 +198,7 @@ button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
 <div class="bg-layer bg-chandarana"></div>
 <div class="bg-layer bg-carrefour"></div>
+<div id="previewOverlay" onclick="togglePreviewZoom()"></div>
 
 <div class="container">
   <div id="networkIndicator" class="network-indicator"></div>
@@ -223,8 +237,17 @@ button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         <div id="gpsMsg" class="msg"></div>
       </div>
 
-      <div id="step4" class="step">
+      <div id="step4" class="step full-width">
         <label>Identity</label>
+        
+        <!-- Inline Camera Feed -->
+        <div id="videoContainerWrapper">
+          <video id="cameraVideo" autoplay playsinline></video>
+          <div class="camera-overlay">
+            <div id="captureBtn" onclick="capturePhoto()"></div>
+          </div>
+        </div>
+        
         <button id="openCameraBtn" onclick="startCamera()">Take a Selfie</button>
         <input type="file" accept="image/*" capture="user" id="cameraInput" style="display:none">
         <div id="cameraMsg" class="msg"></div>
@@ -261,15 +284,6 @@ button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
     </div>
     <div class="success-warning" id="successWarning"></div>
     <button class="success-back" onclick="resetToStart()">← Submit Another</button>
-  </div>
-</div>
-
-<!-- Fullscreen WebRTC Camera Container -->
-<div id="videoContainer">
-  <button id="closeCameraBtn" onclick="stopCamera()">✕</button>
-  <video id="cameraVideo" autoplay playsinline></video>
-  <div class="camera-overlay">
-    <div id="captureBtn" onclick="capturePhoto()"></div>
   </div>
 </div>
 
@@ -352,7 +366,6 @@ function switchTerminal(term) {
   currentTerminal = term;
   Storage.set('selected_terminal', term);
   
-  // IMMEDIATELY reset the data so users don't see the previous terminal's shops
   staff = [];
   branches = [];
   document.getElementById('branch').innerHTML = '<option value="">Loading...</option>';
@@ -373,7 +386,6 @@ function saveOfflineQueue() {
   try { 
     Storage.set('attendance_offline_queue', JSON.stringify(offlineQueue)); 
   } catch(e) {
-    // Failsafe: if device storage gets completely full, clear the oldest half of the queue
     if (offlineQueue.length > 0) {
        offlineQueue = offlineQueue.slice(Math.floor(offlineQueue.length / 2));
        try { Storage.set('attendance_offline_queue', JSON.stringify(offlineQueue)); } catch(e2) {}
@@ -492,7 +504,7 @@ function resetStepsFrom(n) {
     stopCamera();
     const p = document.getElementById('preview'); 
     p.style.display = 'none'; p.src = ''; p.classList.remove('recovered-photo'); 
-    p.style.transform = 'scale(1)'; // reset zoom
+    if (p.classList.contains('enlarged')) togglePreviewZoom();
     clearMsg('cameraMsg'); 
     document.getElementById('cameraInput').value = ''; 
   }
@@ -539,18 +551,22 @@ document.getElementById('actionChoice').onchange = function() {
   showSuccess('actionMsg', 'Ready for Submission'); activateStep(6); 
 };
 
-// Toggle zoom for the preview circle
-document.getElementById('preview').onclick = function() {
-  if (this.style.transform === 'scale(2.5)') {
-    this.style.transform = 'scale(1)';
-    this.style.zIndex = '1';
-    this.style.position = 'relative';
+// Exploding Photo Preview Logic
+function togglePreviewZoom() {
+  const p = document.getElementById('preview');
+  const overlay = document.getElementById('previewOverlay');
+  if (p.classList.contains('enlarged')) {
+    p.classList.remove('enlarged');
+    overlay.classList.remove('show');
+    setTimeout(() => { overlay.style.display = 'none'; }, 400);
   } else {
-    this.style.transform = 'scale(2.5)';
-    this.style.zIndex = '100';
-    this.style.position = 'relative';
+    overlay.style.display = 'block';
+    void overlay.offsetWidth; // trigger reflow
+    overlay.classList.add('show');
+    p.classList.add('enlarged');
   }
-};
+}
+document.getElementById('preview').onclick = togglePreviewZoom;
 
 function showGuideModal(type) {
   const modal = document.getElementById('guideModal'), title = document.getElementById('guideTitle'), text = document.getElementById('guideText'), icon = document.getElementById('guideIcon');
@@ -580,7 +596,7 @@ function verifyGPS() {
 }
 
 async function startCamera() {
-  const videoContainer = document.getElementById('videoContainer');
+  const wrapper = document.getElementById('videoContainerWrapper');
   const videoElement = document.getElementById('cameraVideo');
   const openBtn = document.getElementById('openCameraBtn');
   
@@ -595,12 +611,13 @@ async function startCamera() {
     });
     
     videoElement.srcObject = videoStream;
-    videoContainer.style.display = 'flex'; // Overlay full screen
+    wrapper.classList.add('expanded'); // Smoothly expand half-screen
+    openBtn.style.display = 'none';
     clearMsg('cameraMsg');
   } catch (err) {
-    console.error("Camera access failed", err);
-    // Fallback to the old file input method if WebRTC fails (e.g. on older phones)
-    showGuideModal('camera');
+    console.warn("Camera access failed or unsupported", err);
+    // Absolute fallback for bad/old/fake phones
+    wrapper.classList.remove('expanded');
     document.getElementById('cameraInput').click();
   }
 }
@@ -609,7 +626,7 @@ function capturePhoto() {
   const videoElement = document.getElementById('cameraVideo');
   const canvas = document.createElement('canvas');
   
-  // Create a 640x480 snapshot instantly without freezing
+  // Create a 640x480 snapshot instantly
   canvas.width = videoElement.videoWidth || 640;
   canvas.height = videoElement.videoHeight || 480;
   
@@ -635,9 +652,12 @@ function stopCamera() {
     videoStream.getTracks().forEach(track => track.stop());
     videoStream = null;
   }
-  document.getElementById('videoContainer').style.display = 'none';
+  document.getElementById('videoContainerWrapper').classList.remove('expanded');
   const openBtn = document.getElementById('openCameraBtn');
-  if (openBtn) openBtn.innerText = photo ? 'Retake Selfie' : 'Take a Selfie';
+  if (openBtn) {
+    openBtn.style.display = 'block';
+    openBtn.innerText = photo ? 'Retake Selfie' : 'Take a Selfie';
+  }
 }
 
 // Fallback logic for devices that don't support the live video feed
@@ -676,7 +696,11 @@ async function submitAttendance() {
     if (err.message === 'OFFLINE' || err.name === 'TypeError') {
       offlineQueue.push({ data: payload, terminal: currentTerminal });
       saveOfflineQueue(); finishSubmission(action, staffID);
-    } else { showError('submitMsg', err.message); btn.textContent = 'RETRY'; btn.disabled = false; }
+    } else { 
+      // This will show standard errors like "Name has already clocked in today"
+      showError('submitMsg', err.message); 
+      btn.textContent = 'RETRY'; btn.disabled = false; 
+    }
   }
 }
 
@@ -686,11 +710,11 @@ function finishSubmission(action, staffID) {
   let emoji = '✅', badge = 'Submitted', msg = '', warning = null;
   if (isClockIn) {
     if (hrs < 8) { emoji = '🌟'; badge = 'On Time!'; msg = "Fantastic start — you're early today! keep it up"; }
-    else if (hrs < 11) { emoji = '⏰'; badge = 'Clocked In'; msg = "Late for morning shift."; warning = "⚠️ Warning: Consistent late clock-ins are reviewed by management."; }
-    else if (hrs < 15) { emoji = '✅'; badge = 'On Time!'; msg = "Have a productive second shift!"; }
+    else if (hrs < 11) { emoji = '⏰'; badge = 'Clocked In'; msg = "You're late!."; warning = "⚠️ Warning: Consistent late clock-ins are reviewed by management."; }
+    else if (hrs < 15) { emoji = '✅'; badge = 'On Time!'; msg = "Have a productive shift!"; }
     else { emoji = '⏰'; badge = 'Clocked In'; msg = "Late for afternoon shift."; warning = "⚠️ Warning: Late clock-ins are reviewed by management."; }
   } else {
-    if (hrs < 16) { emoji = '👋'; badge = 'Clocked Out'; msg = "Have a wonderful afternoon!"; }
+    if (hrs < 16) { emoji = '👋'; badge = 'Clocked Out'; msg = "Have a wonderful day!"; }
     else { emoji = '🌙'; badge = 'Clocked Out'; msg = "Have a restful night!"; }
   }
   document.getElementById('successEmoji').textContent = emoji; document.getElementById('successBadge').textContent = badge; 
