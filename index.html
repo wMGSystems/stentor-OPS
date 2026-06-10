@@ -105,11 +105,6 @@ body.theme-carrefour {--dynamic-primary:var(--theme-carr);--success-color:#1a73e
 .pill-btn.active .full-text{display:block}
 .pill-btn:not(.active) .short-text{display:block}
 
-@keyframes cartoonNudge{
-  0%{transform:scale(1) rotate(0deg)} 20%{transform:scale(1.15) rotate(-5deg)}
-  40%{transform:scale(1.15) rotate(5deg)} 60%{transform:scale(1.05) rotate(-3deg)}
-  80%{transform:scale(1.02) rotate(2deg)} 100%{transform:scale(1) rotate(0deg)}
-}
 @keyframes bounceIn{
   0%{transform:scale(0.9);opacity:0} 60%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1}
 }
@@ -120,9 +115,8 @@ body.theme-carrefour {--dynamic-primary:var(--theme-carr);--success-color:#1a73e
 h2{
   text-align:center;color:var(--dynamic-primary);margin:0 auto 18px;
   width:max-content;font-size:20px;text-transform:uppercase;letter-spacing:1px;
-  transition:color 0.4s ease;font-weight:800;transform-origin:center;
+  font-weight:800;
 }
-.shake-nudge{animation:cartoonNudge 0.55s cubic-bezier(0.36,0.07,0.19,0.97) both}
 
 .step-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .step{opacity:0.28;pointer-events:none;transition:opacity 0.4s ease}
@@ -151,7 +145,7 @@ button:disabled{opacity:0.6;cursor:not-allowed;transform:none}
 button.loading{animation:pulse 0.9s ease-in-out infinite}
 
 /* ═══════════════════════════════════════════════════════
-   CAMERA SYSTEM (Cinematic Fade + Shrink)
+   CAMERA SYSTEM (Standard Pattern + Savannah Blur)
 ═══════════════════════════════════════════════════════ */
 #step4{position:relative}
 
@@ -167,32 +161,37 @@ button.loading{animation:pulse 0.9s ease-in-out infinite}
   border-radius:10px;
   overflow:hidden;
   z-index:60;
-  /* Neutral dark backdrop for the camera instead of theme color */
-  background: #111; 
-  transition:
-    height 0.35s cubic-bezier(0.22,1,0.36,1),
-    width  0.35s cubic-bezier(0.22,1,0.36,1),
-    border-radius 0.25s ease;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   transform-origin:bottom right;
   pointer-events:none;
 }
+
 #videoContainerWrapper.expanded{
   width:calc(200% + 12px);
   height:330px;
   border-radius:14px;
   pointer-events:auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* The Blurred Savannah Background */
+.savannah-bg {
+  position: absolute;
+  inset: -30px; /* Expands outwards to prevent hard unblurred edges */
+  background: url('https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=640&q=60') center/cover no-repeat;
+  filter: blur(15px);
+  z-index: 1;
 }
 
 #cameraVideo{
+  position:relative;
+  z-index: 2;
   width:100%;height:100%;object-fit:cover;display:block;
   opacity: 0;
-  filter: blur(15px);
-  /* Super smooth fade and unblur when camera starts / stops */
-  transition: opacity 0.3s ease, filter 0.4s ease;
+  transition: opacity 0.4s ease;
 }
 #cameraVideo.live {
   opacity: 1;
-  filter: blur(0);
 }
 
 #cameraBackdrop{
@@ -205,13 +204,11 @@ button.loading{animation:pulse 0.9s ease-in-out infinite}
   padding:12px 16px 18px;
   background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 100%);
   display:flex;align-items:center;justify-content:center;
+  z-index: 3;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-/* Only show capture button UI when video is fully live */
-#cameraVideo.live ~ .camera-ui {
-  opacity: 1;
-}
+#cameraVideo.live ~ .camera-ui { opacity: 1; }
 
 #captureBtn{
   width:64px;height:64px;border-radius:50%;
@@ -222,16 +219,16 @@ button.loading{animation:pulse 0.9s ease-in-out infinite}
 #captureBtn::after{content:'';width:46px;height:46px;background:#fff;border-radius:50%;transition:transform 0.1s}
 #captureBtn:active{transform:scale(0.86)}
 #captureBtn:active::after{transform:scale(0.88)}
+
 #closeCameraBtn{
   position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;
   background:rgba(0,0,0,0.42);border:none;color:#fff;font-size:14px;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
+  z-index: 3;
   transition:background 0.15s, opacity 0.3s ease;-webkit-tap-highlight-color:transparent;
   opacity: 0;
 }
-#cameraVideo.live ~ #closeCameraBtn {
-  opacity: 1;
-}
+#cameraVideo.live ~ #closeCameraBtn { opacity: 1; }
 #closeCameraBtn:active{background:rgba(0,0,0,0.75)}
 
 /* ═══════════════════════════════════════════
@@ -241,11 +238,7 @@ button.loading{animation:pulse 0.9s ease-in-out infinite}
   width:58px;height:58px;object-fit:cover;border-radius:50%;
   border:3px solid var(--success-color);
   display:none;margin:4px auto 0;cursor:pointer;
-  transition:
-    width  0.42s cubic-bezier(0.22,1,0.36,1),
-    height 0.42s cubic-bezier(0.22,1,0.36,1),
-    border-width 0.3s ease,
-    box-shadow 0.38s ease;
+  transition: all 0.4s cubic-bezier(0.22,1,0.36,1);
   position:relative;z-index:1;
 }
 #preview.enlarged{
@@ -391,6 +384,7 @@ var Storage={
         <label>Identity</label>
         <div id="cameraBtnWrapper">
           <div id="videoContainerWrapper">
+            <div class="savannah-bg"></div>
             <video id="cameraVideo" autoplay playsinline muted></video>
             <button id="closeCameraBtn" onclick="stopCamera()">✕</button>
             <div class="camera-ui">
@@ -493,7 +487,6 @@ function updateTerminalUI() {
   }, 200);
   var title = document.getElementById('formTitle');
   title.innerText = currentTerminal.charAt(0).toUpperCase() + currentTerminal.slice(1);
-  title.classList.remove('shake-nudge'); void title.offsetWidth; title.classList.add('shake-nudge');
   document.getElementById('btn-chandarana').classList.toggle('active', currentTerminal === 'chandarana');
   document.getElementById('btn-carrefour').classList.toggle('active',  currentTerminal === 'carrefour');
   requestAnimationFrame(function() { requestAnimationFrame(function() {
@@ -724,14 +717,16 @@ function verifyGPS() {
 function startCamera() {
   var btn = document.getElementById('openCameraBtn');
 
+  // Fallback for missing hardware support
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     document.getElementById('cameraInput').click(); return;
   }
 
-  // INSTANT EXPANSION (Expands dark container immediately, UI fades in as feed arrives)
+  // Instantly expand the box showing the Savannah blur background
   document.getElementById('videoContainerWrapper').classList.add('expanded');
   document.getElementById('cameraBackdrop').classList.add('show');
   btn.classList.add('loading');
+  btn.textContent = 'Loading Camera...';
   clearMsg('cameraMsg');
 
   navigator.mediaDevices.getUserMedia({
@@ -745,7 +740,8 @@ function startCamera() {
 
     video.onloadedmetadata = function() {
       video.play().catch(function(){});
-      // Camera feed un-blurs gracefully
+      
+      // Standard fade-in over the background once stream is live
       requestAnimationFrame(function() {
         video.classList.add('live');
         btn.classList.remove('loading');
@@ -771,12 +767,10 @@ function capturePhoto() {
   canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
   photo = canvas.toDataURL('image/jpeg', 0.65);
   
-  // Instantly show the captured preview in the action step
   var p = document.getElementById('preview'); p.src = photo; p.style.display = 'block';
   showSuccess('cameraMsg','Identity Captured');
   activateStep(5); autoSave(false);
 
-  // Stop camera triggers the smooth fade-away shrink animation
   stopCamera();
 }
 
@@ -786,27 +780,22 @@ function stopCamera() {
   var video = document.getElementById('cameraVideo');
   var btn = document.getElementById('openCameraBtn');
 
-  // STEP 1: Fade and blur the feed FIRST
+  // Standard collapse animation
+  wrapper.classList.remove('expanded');
+  backdrop.classList.remove('show');
   video.classList.remove('live');
 
-  // STEP 2: Wait for fade out to complete (250ms) before shrinking box
-  setTimeout(function() {
-    wrapper.classList.remove('expanded');
-    backdrop.classList.remove('show');
-    
-    // Reset button text smoothly
-    if (btn) {
-      btn.textContent = photo ? 'Retake Selfie' : 'Take a Selfie';
-      btn.classList.remove('loading');
-      btn.disabled = false;
-    }
+  if (btn) {
+    btn.textContent = photo ? 'Retake Selfie' : 'Take a Selfie';
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
 
-    // STEP 3: Wait for shrinking animation to finish before killing tracks (no black flash)
-    setTimeout(function() {
-      if (videoStream) { videoStream.getTracks().forEach(function(t){ t.stop(); }); videoStream = null; }
-      video.srcObject = null;
-    }, 350); 
-  }, 250);
+  // Kill tracks cleanly just after CSS shrink finishes (300ms match)
+  setTimeout(function() {
+    if (videoStream) { videoStream.getTracks().forEach(function(t){ t.stop(); }); videoStream = null; }
+    video.srcObject = null;
+  }, 300); 
 }
 
 document.getElementById('cameraInput').onchange = function(e) {
@@ -899,7 +888,6 @@ function finishSubmission(action) {
   var hrs = now.getHours();
   var mins = now.getMinutes();
   
-  // Calculate precise time as decimal (e.g., 6:30 -> 6.5,  7:40 -> 7.666)
   var timeVal = hrs + (mins / 60.0);
   
   var emoji='✅', badge='Submitted', msg='', warning=null;
@@ -919,7 +907,7 @@ function finishSubmission(action) {
       emoji='⏰'; badge='Clocked In'; msg="Late for afternoon shift."; warning="⚠️ Warning: Late clock-ins are reviewed by management."; 
     }
   } else {
-    if (hrs < 16) { emoji='👋'; badge='Clocked Out'; msg="Have a wonderful day!"; }
+    if (hrs < 16) { emoji='👋'; badge='Clocked Out'; msg="Have a wonderful afternoon!"; }
     else          { emoji='🌙'; badge='Clocked Out'; msg="Have a restful night!"; }
   }
 
