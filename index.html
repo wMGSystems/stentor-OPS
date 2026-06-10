@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
@@ -120,7 +120,7 @@ button { width: 100%; height: 44px; padding: 0 12px; border-radius: 10px; border
 button:active { transform: scale(0.98); }
 button.primary { background: var(--dynamic-primary); color: #ffffff; height: 52px; font-size: 16px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15); transition: background 0.4s ease, transform 0.1s; }
 button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-#preview { width: 58px; height: 58px; object-fit: cover; border-radius: 50%; border: 3px solid var(--success-color); display: none; margin: 4px auto 0; background: var(--input-bg); transition: border-color 0.4s ease; }
+#preview { width: 58px; height: 58px; object-fit: cover; border-radius: 50%; border: 3px solid var(--success-color); display: none; margin: 4px auto 0; background: var(--input-bg); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.4s ease; cursor: pointer; transform-origin: center right;}
 
 .msg { font-size: 12px; font-weight: 700; margin-top: 6px; min-height: 20px; color: var(--text-tertiary); display: flex; align-items: center; transition: color 0.2s; }
 .msg.success { color: var(--success-color); font-size: 13px; }
@@ -142,23 +142,29 @@ button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 #guideModal .modal-box h3 { color: var(--error-color); margin: 10px 0 16px; font-size: 20px; }
 .modal-instructions { background: var(--input-bg); color: var(--text-secondary); padding: 16px; border-radius: 10px; margin-bottom: 14px; font-size: 13px; line-height: 1.6; text-align: left; }
 
-/* In-Browser Camera Styles */
+/* Fullscreen Camera Styles */
 #videoContainer {
-  position: relative; width: 100%; aspect-ratio: 4/3; border-radius: 12px; overflow: hidden; background: #000; display: none; margin-bottom: 10px;
+  display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: #000; z-index: 9999; flex-direction: column;
 }
 #cameraVideo {
   width: 100%; height: 100%; object-fit: cover;
 }
+.camera-overlay {
+  position: absolute; bottom: 40px; left: 0; width: 100%;
+  display: flex; justify-content: center; align-items: center; gap: 40px;
+}
 #captureBtn {
-  position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
-  width: 60px; height: 60px; border-radius: 50%; background: rgba(255, 255, 255, 0.4);
+  width: 70px; height: 70px; border-radius: 50%; background: rgba(255, 255, 255, 0.3);
   border: 4px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s;
 }
-#captureBtn::after {
-  content: ''; width: 44px; height: 44px; background: white; border-radius: 50%;
-}
-#captureBtn:active::after {
-  transform: scale(0.9);
+#captureBtn::after { content: ''; width: 54px; height: 54px; background: white; border-radius: 50%; }
+#captureBtn:active { transform: scale(0.9); }
+#closeCameraBtn {
+  position: absolute; top: 20px; right: 20px; color: white; background: rgba(0,0,0,0.5);
+  border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
 }
 </style>
 </head>
@@ -219,16 +225,8 @@ button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
       <div id="step4" class="step">
         <label>Identity</label>
-        
-        <!-- Live Video Preview directly in the browser -->
-        <div id="videoContainer">
-          <video id="cameraVideo" autoplay playsinline></video>
-          <div id="captureBtn" onclick="capturePhoto()"></div>
-        </div>
-        
         <button id="openCameraBtn" onclick="startCamera()">Take a Selfie</button>
         <input type="file" accept="image/*" capture="user" id="cameraInput" style="display:none">
-        
         <div id="cameraMsg" class="msg"></div>
       </div>
 
@@ -263,6 +261,15 @@ button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
     </div>
     <div class="success-warning" id="successWarning"></div>
     <button class="success-back" onclick="resetToStart()">← Submit Another</button>
+  </div>
+</div>
+
+<!-- Fullscreen WebRTC Camera Container -->
+<div id="videoContainer">
+  <button id="closeCameraBtn" onclick="stopCamera()">✕</button>
+  <video id="cameraVideo" autoplay playsinline></video>
+  <div class="camera-overlay">
+    <div id="captureBtn" onclick="capturePhoto()"></div>
   </div>
 </div>
 
@@ -483,10 +490,11 @@ function resetStepsFrom(n) {
   if (n <= 4) { 
     photo = null; 
     stopCamera();
-    const p = document.getElementById('preview'); p.style.display = 'none'; p.src = ''; p.classList.remove('recovered-photo'); 
+    const p = document.getElementById('preview'); 
+    p.style.display = 'none'; p.src = ''; p.classList.remove('recovered-photo'); 
+    p.style.transform = 'scale(1)'; // reset zoom
     clearMsg('cameraMsg'); 
     document.getElementById('cameraInput').value = ''; 
-    document.getElementById('openCameraBtn').innerText = 'Take a Selfie';
   }
   if (n <= 5) { document.getElementById('actionChoice').value = ''; clearMsg('actionMsg'); }
   clearMsg('submitMsg'); autoSave();
@@ -529,6 +537,19 @@ document.getElementById('staffID').oninput = handleStaffInput;
 document.getElementById('actionChoice').onchange = function() {
   clearMsg('submitMsg'); if (!this.value) { clearMsg('actionMsg'); resetStepsFrom(6); return; }
   showSuccess('actionMsg', 'Ready for Submission'); activateStep(6); 
+};
+
+// Toggle zoom for the preview circle
+document.getElementById('preview').onclick = function() {
+  if (this.style.transform === 'scale(2.5)') {
+    this.style.transform = 'scale(1)';
+    this.style.zIndex = '1';
+    this.style.position = 'relative';
+  } else {
+    this.style.transform = 'scale(2.5)';
+    this.style.zIndex = '100';
+    this.style.position = 'relative';
+  }
 };
 
 function showGuideModal(type) {
@@ -574,8 +595,7 @@ async function startCamera() {
     });
     
     videoElement.srcObject = videoStream;
-    videoContainer.style.display = 'block';
-    openBtn.style.display = 'none';
+    videoContainer.style.display = 'flex'; // Overlay full screen
     clearMsg('cameraMsg');
   } catch (err) {
     console.error("Camera access failed", err);
@@ -616,8 +636,8 @@ function stopCamera() {
     videoStream = null;
   }
   document.getElementById('videoContainer').style.display = 'none';
-  document.getElementById('openCameraBtn').style.display = 'block';
-  document.getElementById('openCameraBtn').innerText = 'Retake Selfie';
+  const openBtn = document.getElementById('openCameraBtn');
+  if (openBtn) openBtn.innerText = photo ? 'Retake Selfie' : 'Take a Selfie';
 }
 
 // Fallback logic for devices that don't support the live video feed
