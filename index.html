@@ -151,7 +151,7 @@ button:disabled{opacity:0.6;cursor:not-allowed;transform:none}
 button.loading{animation:pulse 0.9s ease-in-out infinite}
 
 /* ═══════════════════════════════════════════════════════
-   CAMERA SYSTEM (Instant Expand + Blur)
+   CAMERA SYSTEM (Cinematic Fade + Shrink)
 ═══════════════════════════════════════════════════════ */
 #step4{position:relative}
 
@@ -167,10 +167,11 @@ button.loading{animation:pulse 0.9s ease-in-out infinite}
   border-radius:10px;
   overflow:hidden;
   z-index:60;
-  background: var(--dynamic-primary); /* Rectangle color fill */
+  /* Neutral dark backdrop for the camera instead of theme color */
+  background: #111; 
   transition:
-    height 0.3s cubic-bezier(0.22,1,0.36,1),
-    width  0.3s cubic-bezier(0.22,1,0.36,1),
+    height 0.35s cubic-bezier(0.22,1,0.36,1),
+    width  0.35s cubic-bezier(0.22,1,0.36,1),
     border-radius 0.25s ease;
   transform-origin:bottom right;
   pointer-events:none;
@@ -185,8 +186,9 @@ button.loading{animation:pulse 0.9s ease-in-out infinite}
 #cameraVideo{
   width:100%;height:100%;object-fit:cover;display:block;
   opacity: 0;
-  filter: blur(12px);
-  transition: opacity 0.3s ease, filter 0.35s ease;
+  filter: blur(15px);
+  /* Super smooth fade and unblur when camera starts / stops */
+  transition: opacity 0.3s ease, filter 0.4s ease;
 }
 #cameraVideo.live {
   opacity: 1;
@@ -203,7 +205,14 @@ button.loading{animation:pulse 0.9s ease-in-out infinite}
   padding:12px 16px 18px;
   background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 100%);
   display:flex;align-items:center;justify-content:center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
+/* Only show capture button UI when video is fully live */
+#cameraVideo.live ~ .camera-ui {
+  opacity: 1;
+}
+
 #captureBtn{
   width:64px;height:64px;border-radius:50%;
   background:rgba(255,255,255,0.28);border:4px solid rgba(255,255,255,0.92);
@@ -217,7 +226,11 @@ button.loading{animation:pulse 0.9s ease-in-out infinite}
   position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;
   background:rgba(0,0,0,0.42);border:none;color:#fff;font-size:14px;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:background 0.15s;-webkit-tap-highlight-color:transparent;
+  transition:background 0.15s, opacity 0.3s ease;-webkit-tap-highlight-color:transparent;
+  opacity: 0;
+}
+#cameraVideo.live ~ #closeCameraBtn {
+  opacity: 1;
 }
 #closeCameraBtn:active{background:rgba(0,0,0,0.75)}
 
@@ -378,8 +391,8 @@ var Storage={
         <label>Identity</label>
         <div id="cameraBtnWrapper">
           <div id="videoContainerWrapper">
-            <button id="closeCameraBtn" onclick="stopCamera()">✕</button>
             <video id="cameraVideo" autoplay playsinline muted></video>
+            <button id="closeCameraBtn" onclick="stopCamera()">✕</button>
             <div class="camera-ui">
               <div id="captureBtn" onclick="capturePhoto()"></div>
             </div>
@@ -715,7 +728,7 @@ function startCamera() {
     document.getElementById('cameraInput').click(); return;
   }
 
-  // INSTANT EXPANSION (Creates theme colored blur effect before feed starts)
+  // INSTANT EXPANSION (Expands dark container immediately, UI fades in as feed arrives)
   document.getElementById('videoContainerWrapper').classList.add('expanded');
   document.getElementById('cameraBackdrop').classList.add('show');
   btn.classList.add('loading');
@@ -732,7 +745,7 @@ function startCamera() {
 
     video.onloadedmetadata = function() {
       video.play().catch(function(){});
-      // Feed fades in cleanly taking over the blur block
+      // Camera feed un-blurs gracefully
       requestAnimationFrame(function() {
         video.classList.add('live');
         btn.classList.remove('loading');
@@ -757,10 +770,14 @@ function capturePhoto() {
   canvas.height = video.videoHeight || 480;
   canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
   photo = canvas.toDataURL('image/jpeg', 0.65);
-  stopCamera();
+  
+  // Instantly show the captured preview in the action step
   var p = document.getElementById('preview'); p.src = photo; p.style.display = 'block';
   showSuccess('cameraMsg','Identity Captured');
   activateStep(5); autoSave(false);
+
+  // Stop camera triggers the smooth fade-away shrink animation
+  stopCamera();
 }
 
 function stopCamera() {
@@ -769,22 +786,27 @@ function stopCamera() {
   var video = document.getElementById('cameraVideo');
   var btn = document.getElementById('openCameraBtn');
 
-  // Shrink visually back to the colored blur box first
-  wrapper.classList.remove('expanded');
-  backdrop.classList.remove('show');
+  // STEP 1: Fade and blur the feed FIRST
   video.classList.remove('live');
 
-  if (btn) {
-    btn.textContent = photo ? 'Retake Selfie' : 'Take a Selfie';
-    btn.classList.remove('loading');
-    btn.disabled = false;
-  }
-  
-  // Wait to allow collapse transition finish before severing the video tracks, eliminating the black flash
+  // STEP 2: Wait for fade out to complete (250ms) before shrinking box
   setTimeout(function() {
-    if (videoStream) { videoStream.getTracks().forEach(function(t){ t.stop(); }); videoStream = null; }
-    video.srcObject = null;
-  }, 350); 
+    wrapper.classList.remove('expanded');
+    backdrop.classList.remove('show');
+    
+    // Reset button text smoothly
+    if (btn) {
+      btn.textContent = photo ? 'Retake Selfie' : 'Take a Selfie';
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+
+    // STEP 3: Wait for shrinking animation to finish before killing tracks (no black flash)
+    setTimeout(function() {
+      if (videoStream) { videoStream.getTracks().forEach(function(t){ t.stop(); }); videoStream = null; }
+      video.srcObject = null;
+    }, 350); 
+  }, 250);
 }
 
 document.getElementById('cameraInput').onchange = function(e) {
@@ -831,7 +853,7 @@ function submitAttendance() {
   var member = null;
   for (var i = 0; i < staff.length; i++) { if (staff[i].id===staffID){ member=staff[i]; break; } }
   
-  // Cache to remember actions locally so refreshing browser doesn't permit identical dual submissions
+  // Local History check to prevent duplicate submittals even if refreshed
   var todayKey = new Date().toDateString();
   var histRaw = Storage.get('local_history_' + currentTerminal);
   var history = histRaw ? JSON.parse(histRaw) : {};
@@ -845,11 +867,9 @@ function submitAttendance() {
       if (!lastAction) { showError('submitMsg','Cannot Clock Out. '+firstName+' hasn\'t Clocked In today.'); return; }
       if (lastAction === 'Clock Out') { showError('submitMsg', firstName+' has already clocked out today.'); return; }
     }
-    // Lock local states 
     member.status = action;
   }
   
-  // Save Local Cache strictly
   history[staffID + '_' + todayKey] = action;
   try { Storage.set('local_history_' + currentTerminal, JSON.stringify(history)); } catch(e){}
 
@@ -899,7 +919,7 @@ function finishSubmission(action) {
       emoji='⏰'; badge='Clocked In'; msg="Late for afternoon shift."; warning="⚠️ Warning: Late clock-ins are reviewed by management."; 
     }
   } else {
-    if (hrs < 16) { emoji='👋'; badge='Clocked Out'; msg="Have a wonderful afternoon!"; }
+    if (hrs < 16) { emoji='👋'; badge='Clocked Out'; msg="Have a wonderful day!"; }
     else          { emoji='🌙'; badge='Clocked Out'; msg="Have a restful night!"; }
   }
 
