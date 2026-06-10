@@ -32,6 +32,7 @@
   --label-text:#666666;
   --theme-chan:#059669; --theme-carr:#1a73e8;
   --dynamic-primary:var(--theme-chan);
+  --fallback-cam-bg: #ffffff; /* Light mode default camera background */
 }
 @media (prefers-color-scheme:dark) {
   :root {
@@ -45,6 +46,7 @@
     --modal-overlay:rgba(0,0,0,0.88); --shadow-color:rgba(0,0,0,0.4);
     --label-text:#a0a0a0;
     --theme-chan:#10b981; --theme-carr:#3b82f6;
+    --fallback-cam-bg: #000000; /* Dark mode default camera background */
   }
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -145,7 +147,7 @@ button:disabled{opacity:0.6;cursor:not-allowed;transform:none}
 button.loading{animation:pulse 0.9s ease-in-out infinite}
 
 /* ═══════════════════════════════════════════════════════
-   CAMERA SYSTEM (Standard Pattern + Savannah Blur)
+   CAMERA SYSTEM
 ═══════════════════════════════════════════════════════ */
 #step4{position:relative}
 
@@ -174,11 +176,14 @@ button.loading{animation:pulse 0.9s ease-in-out infinite}
   box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-/* The Blurred Savannah Background */
-.savannah-bg {
+/* The Blurred Background (Adapts perfectly to light/dark or user photo) */
+.fallback-bg {
   position: absolute;
-  inset: -30px; /* Expands outwards to prevent hard unblurred edges */
-  background: url('https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=640&q=60') center/cover no-repeat;
+  inset: -30px; 
+  background-color: var(--fallback-cam-bg);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
   filter: blur(15px);
   z-index: 1;
 }
@@ -384,7 +389,7 @@ var Storage={
         <label>Identity</label>
         <div id="cameraBtnWrapper">
           <div id="videoContainerWrapper">
-            <div class="savannah-bg"></div>
+            <div class="fallback-bg" id="fallbackBg"></div>
             <video id="cameraVideo" autoplay playsinline muted></video>
             <button id="closeCameraBtn" onclick="stopCamera()">✕</button>
             <div class="camera-ui">
@@ -721,8 +726,19 @@ function startCamera() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     document.getElementById('cameraInput').click(); return;
   }
+  
+  // Look for the user's previously saved photo
+  var lastPhoto = Storage.get('attendance_last_photo');
+  var bgEl = document.getElementById('fallbackBg');
+  
+  // If no last photo exists, CSS instantly supplies a pure white/black blurred backdrop based on phone's theme
+  if (lastPhoto) {
+    bgEl.style.backgroundImage = "url('" + lastPhoto + "')";
+  } else {
+    bgEl.style.backgroundImage = ""; 
+  }
 
-  // Instantly expand the box showing the Savannah blur background
+  // Instantly expand the box
   document.getElementById('videoContainerWrapper').classList.add('expanded');
   document.getElementById('cameraBackdrop').classList.add('show');
   btn.classList.add('loading');
@@ -741,7 +757,6 @@ function startCamera() {
     video.onloadedmetadata = function() {
       video.play().catch(function(){});
       
-      // Standard fade-in over the background once stream is live
       requestAnimationFrame(function() {
         video.classList.add('live');
         btn.classList.remove('loading');
@@ -767,6 +782,9 @@ function capturePhoto() {
   canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
   photo = canvas.toDataURL('image/jpeg', 0.65);
   
+  // Save locally for the next time the blur background is needed
+  try { Storage.set('attendance_last_photo', photo); } catch(e){}
+  
   var p = document.getElementById('preview'); p.src = photo; p.style.display = 'block';
   showSuccess('cameraMsg','Identity Captured');
   activateStep(5); autoSave(false);
@@ -780,7 +798,6 @@ function stopCamera() {
   var video = document.getElementById('cameraVideo');
   var btn = document.getElementById('openCameraBtn');
 
-  // Standard collapse animation
   wrapper.classList.remove('expanded');
   backdrop.classList.remove('show');
   video.classList.remove('live');
@@ -791,7 +808,6 @@ function stopCamera() {
     btn.disabled = false;
   }
 
-  // Kill tracks cleanly just after CSS shrink finishes (300ms match)
   setTimeout(function() {
     if (videoStream) { videoStream.getTracks().forEach(function(t){ t.stop(); }); videoStream = null; }
     video.srcObject = null;
@@ -809,6 +825,10 @@ document.getElementById('cameraInput').onchange = function(e) {
       var canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
       canvas.getContext('2d').drawImage(img,0,0,w,h);
       photo=canvas.toDataURL('image/jpeg',q);
+      
+      // Save locally for the next time the blur background is needed
+      try { Storage.set('attendance_last_photo', photo); } catch(err){}
+
       var p=document.getElementById('preview'); p.src=photo; p.style.display='block';
       showSuccess('cameraMsg','Identity Captured'); activateStep(5); autoSave(false);
     } catch(err){ showError('cameraMsg','Error processing photo.'); }
@@ -842,7 +862,6 @@ function submitAttendance() {
   var member = null;
   for (var i = 0; i < staff.length; i++) { if (staff[i].id===staffID){ member=staff[i]; break; } }
   
-  // Local History check to prevent duplicate submittals even if refreshed
   var todayKey = new Date().toDateString();
   var histRaw = Storage.get('local_history_' + currentTerminal);
   var history = histRaw ? JSON.parse(histRaw) : {};
