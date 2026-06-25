@@ -217,10 +217,17 @@ th:first-child, td.flavor-name { position: sticky; left: 0; background: var(--bg
 /* SUCCESS SCREENS */
 #attSuccessScreen { display:none;flex-direction:column;align-items:center; justify-content:center; padding:10px 4px;text-align:center;width:100%; }
 .success-photo{ width: 120px; height: 120px; object-fit: cover; border-radius: 50%; box-shadow: 0 0 0 4px var(--success-color); margin-bottom: 20px; animation: bounceIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); cursor: zoom-in; position: relative; z-index: 10; -webkit-tap-highlight-color: transparent; }
-.success-badge{ background:var(--dynamic-primary);color:#fff;font-size:14px;font-weight:800; text-transform:uppercase;padding:8px 24px;border-radius:999px; margin-bottom:24px;display:inline-block;box-shadow:0 4px 10px rgba(0,0,0,0.1); animation:bounceIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s backwards; }
+.success-badge{ background:var(--dynamic-primary);color:#fff;font-size:14px;font-weight:800; text-transform:uppercase;padding:8px 24px;border-radius:999px; display:inline-block;box-shadow:0 4px 10px rgba(0,0,0,0.1); animation:bounceIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s backwards; }
 .success-card{ background:var(--success-card-bg);border:1px solid var(--success-card-border); border-radius:20px;padding:24px 20px;width:100%;margin-bottom:20px; animation:bounceIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s backwards; }
 .success-name{font-size:26px;font-weight:800;color:var(--dynamic-primary);margin-bottom:8px}
 .success-msg {font-size:15px;font-weight:600;color:var(--text-secondary);line-height:1.5}
+
+/* ANIMATED TICK SVG */
+.success-tick { width: 34px; height: 34px; border-radius: 50%; display: block; stroke-width: 4; stroke: var(--dynamic-primary); stroke-miterlimit: 10; animation: scaleTick .3s ease-in-out .3s both; }
+.success-tick-circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 4; stroke-miterlimit: 10; stroke: var(--dynamic-primary); fill: none; animation: strokeTick 0.5s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
+.success-tick-check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; stroke: var(--dynamic-primary); animation: strokeTick 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.4s forwards; }
+@keyframes strokeTick { 100% { stroke-dashoffset: 0; } }
+@keyframes scaleTick { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } }
 
 /* RECEIPT & MODALS */
 .modal-overlay { display:none; position:fixed; inset:0; background:var(--modal-overlay); z-index:19999; flex-direction:column; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); }
@@ -393,7 +400,15 @@ function purgeCacheAtMidnight() {
 
       <div id="attSuccessScreen">
         <img id="successPhoto" class="success-photo" src="" alt="Captured Selfie" onclick="openZoom()">
-        <div class="success-badge" id="successBadge">CLOCK IN</div>
+        
+        <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:24px;">
+          <div class="success-badge" id="successBadge" style="margin-bottom:0;">CLOCK IN</div>
+          <svg class="success-tick" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle class="success-tick-circle" cx="26" cy="26" r="25" fill="none" />
+            <path class="success-tick-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+          </svg>
+        </div>
+
         <div class="success-card">
           <div class="success-name" id="successName"></div>
           <div class="success-msg" id="successMsg"></div>
@@ -1136,7 +1151,7 @@ function handleStaffInput() {
       
       // 6-HOUR & 7 PM EXEMPTION LOGIC
       if (hoursSince < 6 && currentHour < 19) { 
-        staffRestrictionError = 'Please wait 6 hours before clocking out, or wait until 7 PM.'; 
+        staffRestrictionError = 'You have already clocked in, wait for the end of your shift to clock out.'; 
       }
       currentAction = 'Clock Out';
     } else { 
@@ -1253,8 +1268,7 @@ function capturePhoto() {
   btn.innerHTML = '<span class="btn-spinner" style="display:inline-block; vertical-align:middle; width:16px; height:16px; margin-right:8px;"></span><span style="vertical-align:middle;">Submitting...</span>';
   btn.disabled = true;
   
-  document.getElementById('cameraMsg').innerHTML = 'Syncing securely to cloud...';
-  document.getElementById('cameraMsg').className = 'msg';
+  clearMsg('cameraMsg'); // Clear any sync message below the button
   
   submitAttendanceRealtime();
 }
