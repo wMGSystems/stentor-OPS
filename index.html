@@ -779,35 +779,47 @@ const JUICES = { chandarana: ["ORANGE", "TROPICAL MIX", "MANGO", "PASSION", "APP
 
 function handleJuiceTouch(e, step) {
   const el = e.currentTarget;
+  
   if (e.type === 'touchmove') { el.hasScrolled = true; clearTimeout(el.pressTimer); return; }
   
-  if (e.type === 'touchstart' || e.type === 'mousedown') { 
+  if (e.type === 'touchstart' || e.type === 'mousedown') {
+    if (e.type === 'touchstart') el.ignoreMouse = true;
+    if (e.type === 'mousedown' && el.ignoreMouse) return;
+
     el.hasScrolled = false;
-    el.pressTimer = setTimeout(() => { 
-      el.isLong = true; 
-      if(navigator.vibrate) navigator.vibrate(50); 
-      el.setAttribute('data-val', "0"); el.innerText = '-'; el.classList.remove('has-value'); 
+    el.isLong = false;
+    clearTimeout(el.pressTimer);
+
+    el.pressTimer = setTimeout(() => {
+      el.isLong = true;
+      if(navigator.vibrate) navigator.vibrate(50);
+      el.setAttribute('data-val', "0"); el.innerText = '-'; el.classList.remove('has-value');
     }, 400);
-  } 
-  else if (e.type === 'touchend' || e.type === 'mouseup') { 
-    clearTimeout(el.pressTimer); 
-    if (el.hasScrolled) return; 
-    if (e.cancelable) e.preventDefault(); 
-    
-    if(!el.isLong) { 
-      let currentVal = parseInt(el.getAttribute('data-val')) || 0; 
-      currentVal += step; 
-      if(currentVal > 60) currentVal = 0; 
-      el.setAttribute('data-val', currentVal); el.innerText = currentVal === 0 ? '-' : currentVal; el.classList.toggle('has-value', currentVal > 0); 
-      const flavor = el.getAttribute('data-flavor'), vol = el.getAttribute('data-vol'), otherVol = vol === '5L' ? '3L' : '5L'; 
-      const otherEl = document.querySelector(`.juice-input[data-flavor="${flavor}"][data-vol="${otherVol}"]`); 
-      if (currentVal > 0 && otherEl && parseInt(otherEl.getAttribute('data-val')) > 0) { 
-        otherEl.setAttribute('data-val', 0); otherEl.innerText = '-'; otherEl.classList.remove('has-value'); 
-      } 
-    } 
-    el.isLong = false; 
-  } 
-  else { clearTimeout(el.pressTimer); el.isLong = false; }
+  }
+  else if (e.type === 'touchend' || e.type === 'mouseup') {
+    if (e.type === 'mouseup' && el.ignoreMouse) {
+      setTimeout(() => el.ignoreMouse = false, 300);
+      return;
+    }
+
+    clearTimeout(el.pressTimer);
+    if (el.hasScrolled) return;
+    if (e.cancelable && e.type === 'touchend') e.preventDefault();
+
+    if(!el.isLong) {
+      let currentVal = parseInt(el.getAttribute('data-val')) || 0;
+      currentVal += step;
+      if(currentVal > 60) currentVal = 0;
+      el.setAttribute('data-val', currentVal); el.innerText = currentVal === 0 ? '-' : currentVal; el.classList.toggle('has-value', currentVal > 0);
+      
+      const flavor = el.getAttribute('data-flavor'), vol = el.getAttribute('data-vol'), otherVol = vol === '5L' ? '3L' : '5L';
+      const otherEl = document.querySelector(`.juice-input[data-flavor="${flavor}"][data-vol="${otherVol}"]`);
+      if (currentVal > 0 && otherEl && parseInt(otherEl.getAttribute('data-val')) > 0) {
+        otherEl.setAttribute('data-val', "0"); otherEl.innerText = '-'; otherEl.classList.remove('has-value');
+      }
+    }
+  }
+  else { clearTimeout(el.pressTimer); }
 }
 
 function renderDynamicOrderContent() {
@@ -883,13 +895,36 @@ async function confirmAndSendOrder() {
     const targetSheet = activeStore === 'chandarana' ? 'Chandarana' : 'Carrefour';
     const res = await (await fetch(SCRIPT_URL, { method: "POST", headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'saveOrder', store: targetSheet, data: pendingOrderPayload }) })).json();
     if (!res.ok) throw new Error(res.error);
-    document.getElementById('orderConfirmModal').style.display = 'none'; document.getElementById('orderForm').style.display = 'none'; document.getElementById('orderTopBar').style.display = 'none'; document.getElementById('orderSuccessScreen').style.display = 'flex';
-    orderState[activeStore] = { juices: {}, fresh: [], bottles: [], haccp: [] };
+    
+    document.getElementById('orderConfirmModal').style.display = 'none'; 
+    document.getElementById('orderForm').style.display = 'none'; 
+    document.getElementById('orderTopBar').style.display = 'none'; 
+    document.getElementById('orderSuccessScreen').style.display = 'flex';
+    
+    // WIPE ALL STATE AFTER SUCCESSFUL ORDER
+    orderState = { chandarana: { juices: {}, fresh: [], bottles: [], haccp: [] }, carrefour: { juices: {}, fresh: [], bottles: [], haccp: [] } };
+    orderStoreState = { chandarana: { id: '' }, carrefour: { id: '' } };
+    Storage.remove('last_order_id_chandarana');
+    Storage.remove('last_order_id_carrefour');
+    document.getElementById('o-id').value = '';
+    document.getElementById('o-notes').value = '';
+
   } catch (err) { alert(err.message); }
   btn.disabled = false; btn.innerText = 'Confirm & Send';
 }
 
-function resetOrderForm() { document.getElementById('orderSuccessScreen').style.display = 'none'; document.getElementById('orderTopBar').style.display = 'flex'; document.getElementById('orderForm').style.display = 'block'; document.getElementById('o-notes').value = ''; renderDynamicOrderContent(); instantOrderStaffCheck(document.getElementById('o-id').value); }
+function resetOrderForm() { 
+  document.getElementById('orderSuccessScreen').style.display = 'none'; 
+  document.getElementById('orderTopBar').style.display = 'flex'; 
+  document.getElementById('orderForm').style.display = 'block'; 
+  
+  // Enforce blank slate layout
+  document.getElementById('o-id').value = ''; 
+  document.getElementById('o-notes').value = ''; 
+  
+  renderDynamicOrderContent(); 
+  instantOrderStaffCheck(''); 
+}
 
 
 // ==========================================
