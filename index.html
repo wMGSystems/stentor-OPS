@@ -66,7 +66,7 @@ body {
   transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 input, textarea, select { -webkit-user-select: auto; user-select: auto; font-family: inherit;}
-.view-section, .btn-primary, .btn-secondary, .pill-btn, .back-pill, .menu-card, .hanging-sign, .chip-span, .order-group-title { -webkit-user-select: none; user-select: none; }
+.view-section, .btn-primary, .btn-secondary, .pill-btn, .back-pill, .hanging-sign, .chip-span, .order-group-title { -webkit-user-select: none; user-select: none; }
 
 /* THEME HANDLING */
 body::before { content: ""; position: fixed; inset: 0; background: linear-gradient(135deg, #059669 0%, #2563eb 100%); opacity: 0; visibility: hidden; z-index: -1; transition: opacity 0.3s ease; pointer-events: none; }
@@ -82,6 +82,79 @@ body.theme-carrefour {--dynamic-primary:var(--theme-carr);--success-color:#3b82f
 @keyframes bounceIn{ 0%{transform:scale(0.9);opacity:0} 60%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
 @keyframes spin{ to { transform: rotate(360deg); } }
 
+/* ==================================
+   1. WELCOME SPLASH SCREEN
+=================================== */
+.welcome-section {
+  display: none; 
+  width: 100%; max-width: 100% !important;
+  height: 100vh; height: 100dvh;
+  flex-direction: column; justify-content: space-between;
+  padding: 12vh 8vw 10vh 8vw; box-sizing: border-box;
+  position: absolute; inset: 0; z-index: 50;
+  background: var(--bg-primary);
+}
+.welcome-section.active { display: flex; opacity: 1; animation: sectionFadeIn 0.4s ease forwards; }
+
+.doodle-bg {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><g stroke="%23000" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M 40 40 A 15 15 0 0 1 70 40 A 15 15 0 0 1 40 40 Z"/><path d="M 55 25 L 55 15 M 55 15 Q 65 15 70 20"/><circle cx="150" cy="60" r="20"/><path d="M 130 60 L 170 60 M 150 40 L 150 80"/><path d="M 50 150 Q 70 120 90 150 Q 70 180 50 150 Z"/><circle cx="160" cy="150" r="4" fill="%23000"/><circle cx="140" cy="160" r="3" fill="%23000"/></g></svg>');
+  background-size: 160px 160px; background-repeat: repeat;
+  opacity: 0.04;
+}
+@media (prefers-color-scheme: dark) { .doodle-bg { filter: invert(1); opacity: 0.1; } }
+
+.welcome-top { position: relative; z-index: 2; width: 100%; }
+.welcome-title { font-size: 52px; font-weight: 900; line-height: 1.05; color: var(--text-primary); text-align: left; margin: 0; letter-spacing: -1px; }
+
+.welcome-bottom { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-end; text-align: right; width: 100%; gap: 10px; }
+.welcome-date { color: var(--theme-chan); font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Tagline pill wrapper for white-on-light-mode legibility */
+.welcome-tagline { color: #ffffff; background: #111827; padding: 6px 14px; border-radius: 12px; font-size: 18px; font-weight: 800; }
+@media (prefers-color-scheme: dark) { .welcome-tagline { background: #374151; } }
+
+.welcome-statement { color: var(--theme-chan); font-size: 20px; font-weight: 900; text-transform: uppercase; margin-bottom: 12px;}
+
+.welcome-next-pill {
+  background: var(--theme-chan); color: #fff; width: 85px; height: 50px;
+  border-radius: 50px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s; -webkit-tap-highlight-color: transparent;
+}
+.welcome-next-pill:active { transform: scale(0.92); }
+.arrow-icon { width: 30px; height: 30px; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+
+/* ==================================
+   2. MODULE HUB SELECTION MENU
+=================================== */
+.menu-container { width: 100%; display: flex; flex-direction: column; align-items: center; max-width: 380px; z-index: 2; margin-bottom: 5vh; }
+.hub-logo { font-size: 36px; font-weight: 900; color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,0.2); margin-bottom: 6px; }
+.menu-subtitle { color: rgba(255,255,255,0.9); font-weight: 700; font-size: 16px; margin-bottom: 30px; }
+
+.big-pill-wrapper { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 0 12px; overflow: hidden;}
+.big-pill {
+  display: flex; align-items: center; justify-content: flex-start;
+  background: var(--bg-primary); border-radius: 50px;
+  padding: 18px 24px; width: 100%;
+  box-shadow: 0 15px 35px var(--shadow-color); border: 2px solid var(--border-color);
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  opacity: 0; transform: translateX(100vw);
+}
+.big-pill:active { transform: scale(0.96) !important; transition: 0.2s; }
+#view-menu.active .big-pill:nth-child(1) { animation: slideBounceIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; animation-delay: 0.1s; }
+#view-menu.active .big-pill:nth-child(2) { animation: slideBounceIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; animation-delay: 0.2s; }
+
+@keyframes slideBounceIn {
+  0% { transform: translateX(100vw); opacity: 0; }
+  60% { transform: translateX(-15px); opacity: 1; }
+  80% { transform: translateX(5px); opacity: 1; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+.bp-icon { font-size: 34px; margin-right: 20px; }
+.bp-text { font-size: 22px; font-weight: 900; color: var(--text-primary); text-transform: uppercase; }
+
 /* Back Button */
 .back-pill { 
   position: fixed; bottom: 24px; left: 24px; z-index: 9999; 
@@ -94,21 +167,6 @@ body.theme-carrefour {--dynamic-primary:var(--theme-carr);--success-color:#3b82f
 }
 .back-pill.show { opacity: 1; pointer-events: auto; }
 .back-pill:active { transform: scale(0.92); }
-
-/* HUB MENU */
-.menu-container { width: 100%; display: flex; flex-direction: column; align-items: center; max-width: 340px; z-index: 2; margin-bottom: 15vh; }
-.hub-logo { font-size: 36px; font-weight: 900; color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,0.2); margin-bottom: 6px; }
-.menu-subtitle { color: rgba(255,255,255,0.9); font-weight: 700; font-size: 16px; margin-bottom: 30px; }
-.menu-cards { width: 100%; display: flex; flex-direction: column; gap: 20px; }
-.menu-card { display: flex; align-items: center; background: var(--bg-primary); border-radius: 24px; padding: 22px; gap: 20px; width: 100%; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 1px solid var(--border-color); cursor: pointer; opacity: 0; }
-.menu-card:active { transform: scale(0.96) !important; transition: transform 0.2s; }
-#view-menu.active .menu-card:nth-child(1) { animation: slideInLeft 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: 0.05s; }
-#view-menu.active .menu-card:nth-child(2) { animation: slideInRight 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: 0.1s; }
-@keyframes slideInLeft { from { opacity: 0; transform: translateX(-60px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes slideInRight { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
-.mc-icon { font-size: 40px; background: var(--button-secondary-bg); width: 76px; height: 76px; display: flex; align-items: center; justify-content: center; border-radius: 20px; flex-shrink: 0;}
-.mc-content h3 { margin: 0 0 6px; font-size: 24px; font-weight: 900; color: var(--text-primary); text-transform: uppercase;}
-.mc-content p { margin: 0; font-size: 15px; font-weight: 700; color: var(--text-secondary); }
 
 /* SHARED APP CONTAINER */
 .app-container { width: 100%; background:var(--bg-primary); padding:24px 22px; border-radius:24px; box-shadow:0 15px 35px rgba(0,0,0,0.1); position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:center; transition: background 0.4s ease; }
@@ -161,7 +219,6 @@ th:first-child, td.flavor-name { position: sticky; left: 0; background: var(--bg
 
 /* ATTENDANCE SPECIFIC */
 .app-wrapper { position: relative; width: 100%; max-width: 420px; display: flex; flex-direction:column; align-items: center; justify-content: center; padding-top:20px; margin-bottom: 10vh; z-index: 1;}
-
 .hanging-sign-wrapper { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: -5px; perspective: 800px; z-index: 10; width: 240px; pointer-events: none; }
 .chain { position: absolute; top: -30px; width: 5px; height: 34px; background: linear-gradient(to right, #9ca3af, #f3f4f6, #9ca3af); border-radius: 3px; box-shadow: inset 0 0 3px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2); z-index: 1; pointer-events: none; }
 .chain::before { content: ''; position: absolute; top: -6px; left: -3.5px; width: 12px; height: 12px; border-radius: 50%; background: var(--dynamic-primary); border: 3.5px solid #d1d5db; box-shadow: 0 8px 12px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.4), inset 0 2px 4px rgba(0,0,0,0.7); box-sizing: border-box; transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; }
@@ -241,17 +298,16 @@ th:first-child, td.flavor-name { position: sticky; left: 0; background: var(--bg
 #photoZoomContainer { display:none; position:fixed; inset:0; z-index:20000; pointer-events:none; }
 #photoZoomBg { position: absolute; inset:0; }
 #zoomedImage { 
-  position: absolute; 
-  object-fit: cover; 
+  position: absolute; object-fit: cover; 
   box-shadow: 0 0 0 4px var(--success-color), 0 25px 60px rgba(0,0,0,0.6);
-  z-index: 20001;
-  cursor: zoom-out;
+  z-index: 20001; cursor: zoom-out;
 }
 </style>
 </head>
 <body class="theme-hub">
 
 <script>
+// UPDATE WITH YOUR CURRENT DEPLOYMENT URL
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVy7MbFQmI6fVQM0ti52y05c0rc7-KvqUsU3Uq3WXzJ1CEqYP3vF0noIJbNtuL4nOT/exec";
 
 var Storage = { 
@@ -267,7 +323,7 @@ function purgeCacheAtMidnight() {
     Storage.remove('carrefour_portal_data');
     Storage.remove('order_staff_chandarana');
     Storage.remove('order_staff_carrefour');
-    Storage.remove('local_att_state'); // Purge lightweight local memory daily
+    Storage.remove('local_att_state'); 
     Storage.set('cache_date', today);
   }
 }
@@ -279,27 +335,51 @@ function purgeCacheAtMidnight() {
 </div>
 
 <!-- =========================
-     VIEW: HUB MENU
+     VIEW 1: WELCOME SCREEN
 ========================== -->
-<div id="view-menu" class="view-section active" style="align-items: center; justify-content: center; padding-top: 10px;">
+<div id="view-welcome" class="welcome-section active">
+  <div class="doodle-bg"></div>
+  
+  <div class="welcome-top">
+    <h1 class="welcome-title">STENTOR<br>ENT<br>LTD</h1>
+  </div>
+  
+  <div class="welcome-bottom">
+    <div class="welcome-date" id="welcome-date"></div>
+    <div class="welcome-tagline">your home of fresh juice</div>
+    <div class="welcome-statement">drink well live fresh</div>
+    
+    <div class="welcome-next-pill" onclick="goToMenu()">
+      <svg class="arrow-icon" viewBox="0 0 24 24">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- =========================
+     VIEW 2: HUB MENU
+========================== -->
+<div id="view-menu" class="view-section" style="align-items: center; justify-content: center; padding-top: 10px;">
   <div class="menu-container">
     <div class="hub-logo">STENTOR OPS</div>
     <div class="menu-subtitle">Select a module</div>
-    <div class="menu-cards">
-      <div class="menu-card" onclick="openOrder()">
-        <div class="mc-icon">🛒</div>
-        <div class="mc-content"><h3>Place Order</h3><p>Juice orders & supplies</p></div>
+    <div class="big-pill-wrapper">
+      <div class="big-pill" onclick="openAttendance()">
+        <div class="bp-icon">⏰</div>
+        <div class="bp-text">Attendance</div>
       </div>
-      <div class="menu-card" onclick="openAttendance()">
-        <div class="mc-icon">⏰</div>
-        <div class="mc-content"><h3>Attendance</h3><p>Clock In / Out with Selfie</p></div>
+      <div class="big-pill" onclick="openOrder()">
+        <div class="bp-icon">🛒</div>
+        <div class="bp-text">Place Order</div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- =========================
-     VIEW: ORDERS
+     VIEW 3: ORDERS
 ========================== -->
 <div id="view-orders" class="view-section">
   <div class="app-container scrollable">
@@ -320,7 +400,6 @@ function purgeCacheAtMidnight() {
 
       <div id="o-expanded-fields" style="display:none;">
         <div class="section-card" style="display:flex; gap:12px;">
-          <!-- Branch Input with Smart Hold to Edit Logic -->
           <div style="flex:1; position:relative;">
             <label class="input-label">Branch <span id="o-branch-lock-icon" style="font-size:10px; opacity:0.6; font-weight:700; text-transform:none; float:right;">🔒 Hold to edit</span></label>
             <select id="o-branch" class="ui-select" style="pointer-events:none; appearance:none;"></select>
@@ -352,10 +431,9 @@ function purgeCacheAtMidnight() {
 </div>
 
 <!-- =========================
-     VIEW: ATTENDANCE
+     VIEW 4: ATTENDANCE
 ========================== -->
 <div id="view-attendance" class="view-section">
-  
   <div class="app-wrapper">
     <div class="hanging-sign-wrapper" id="signWrapper">
       <div class="chain left-chain"></div><div class="chain right-chain"></div>
@@ -434,9 +512,7 @@ function purgeCacheAtMidnight() {
 
 <!-- Flawless Decoupled Morphing Zoom Overlay -->
 <div id="photoZoomContainer">
-  <!-- Only the background fades in/out -->
   <div id="photoZoomBg" class="glass-overlay" onclick="closeZoom()"></div>
-  <!-- The image scales and morphs independently on top -->
   <img id="zoomedImage" src="" onclick="closeZoom()" />
 </div>
 
@@ -471,12 +547,17 @@ function purgeCacheAtMidnight() {
 let activeStore = 'chandarana', currentTerminal = Storage.get('selected_terminal') || 'chandarana';
 
 document.addEventListener('DOMContentLoaded', function() {
+  // SET THE DATE IN THE WELCOME SCREEN
+  const d = new Date();
+  const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+  document.getElementById('welcome-date').innerText = d.toLocaleDateString('en-GB', dateOptions);
+
   purgeCacheAtMidnight(); 
   loadOrderStaffBackground(); 
-  fetchPortalDataSilent(); // Fetch attendance branches silently for relieving auto-fill
+  fetchPortalDataSilent(); 
   window.addEventListener('online', () => {
     checkNetworkStatus();
-    processAttendanceQueue(); // Process any queued offline submissions immediately
+    processAttendanceQueue(); 
   }); 
   window.addEventListener('offline', checkNetworkStatus);
 });
@@ -487,11 +568,21 @@ function checkNetworkStatus() {
 }
 
 function switchView(viewId) {
+  // Hide active Welcome section properly
+  const welcome = document.getElementById('view-welcome');
+  if (viewId === 'view-welcome') {
+      welcome.style.display = 'flex'; welcome.classList.add('active');
+  } else {
+      welcome.classList.remove('active'); welcome.style.display = 'none';
+  }
+
+  // Handle standard views
   document.querySelectorAll('.view-section').forEach(v => {
+    if (v.id === 'view-welcome') return; 
     if (v.id === viewId) { 
       v.style.display = 'flex'; 
       v.classList.remove('active'); 
-      void v.offsetWidth; // Force reflow for crisp animation
+      void v.offsetWidth; 
       v.classList.add('active'); 
     } else { 
       v.classList.remove('active'); 
@@ -500,13 +591,18 @@ function switchView(viewId) {
   });
 }
 
+function goToMenu() {
+  switchView('view-menu');
+  document.body.className = 'theme-hub';
+  const meta = document.getElementById('theme-color-meta'); if (meta) meta.setAttribute('content', '#059669');
+}
+
 function goHome() { 
   if (document.getElementById('view-orders').classList.contains('active')) saveOrderState();
   if (document.getElementById('view-attendance').classList.contains('active')) stopCamera();
   
   document.getElementById('globalBackBtn').classList.remove('show');
-  switchView('view-menu'); document.body.className = 'theme-hub';
-  const meta = document.getElementById('theme-color-meta'); if (meta) meta.setAttribute('content', '#059669');
+  goToMenu();
 }
 
 function updatePillSlider(containerId, sliderId) {
@@ -517,7 +613,6 @@ function updatePillSlider(containerId, sliderId) {
   }, 50);
 }
 
-// Background Silently Fetch Attendance for Relieving checks
 function fetchPortalDataSilent() {
   ['chandarana', 'carrefour'].forEach(term => {
     fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({action:'getPortalData', terminal:term}) })
@@ -584,14 +679,13 @@ function loadOrderStaffBackground() {
     }).catch(e => {});
 }
 
-// Branch Selection Logic for Orders (Hold to Edit & Smart Lock)
 let branchHoldTimer;
 function startBranchHold(e) {
   if (e.type === 'mousedown' && e.button !== 0) return;
   branchHoldTimer = setTimeout(() => {
      unlockBranchSelect();
      if(navigator.vibrate) navigator.vibrate(50);
-  }, 600); // 600ms hold
+  }, 600);
 }
 function cancelBranchHold() { clearTimeout(branchHoldTimer); }
 
@@ -604,30 +698,19 @@ function lockBranchSelect(isAttendanceVerified) {
   sel.style.fontWeight = '900';
   
   if (isAttendanceVerified) {
-    icon.style.display = 'none';
-    overlay.style.display = 'none';
-    sel.style.background = 'var(--bg-secondary)'; 
-    sel.style.borderColor = 'transparent';
+    icon.style.display = 'none'; overlay.style.display = 'none';
+    sel.style.background = 'var(--bg-secondary)'; sel.style.borderColor = 'transparent';
   } else {
-    icon.style.display = 'inline';
-    icon.innerText = '🔒 Hold to edit';
-    overlay.style.display = 'block';
-    sel.style.background = 'var(--input-bg)'; 
-    sel.style.borderColor = 'var(--input-border)';
+    icon.style.display = 'inline'; icon.innerText = '🔒 Hold to edit'; overlay.style.display = 'block';
+    sel.style.background = 'var(--input-bg)'; sel.style.borderColor = 'var(--input-border)';
   }
 }
 
 function unlockBranchSelect() {
   const sel = document.getElementById('o-branch'), overlay = document.getElementById('o-branch-overlay'), icon = document.getElementById('o-branch-lock-icon');
-  sel.style.pointerEvents = 'auto'; 
-  sel.style.appearance = 'auto'; 
-  sel.style.color = 'var(--dynamic-primary)';
-  sel.style.fontWeight = '900';
-  overlay.style.display = 'none'; 
-  icon.style.display = 'inline';
-  icon.innerText = '🔓 Select below';
-  sel.style.background = 'var(--input-bg)';
-  sel.style.borderColor = 'var(--input-border)';
+  sel.style.pointerEvents = 'auto'; sel.style.appearance = 'auto'; sel.style.color = 'var(--dynamic-primary)'; sel.style.fontWeight = '900';
+  overlay.style.display = 'none'; icon.style.display = 'inline'; icon.innerText = '🔓 Select below';
+  sel.style.background = 'var(--input-bg)'; sel.style.borderColor = 'var(--input-border)';
 }
 
 function populateOrderBranches() {
@@ -638,105 +721,59 @@ function populateOrderBranches() {
    
    let html = `<optgroup label="Chandarana" style="color: var(--theme-chan); font-weight: 900;">` + chanBranches.map(b => `<option value="${b}" data-store="chandarana" style="color: var(--text-primary); font-weight: 700;">${b}</option>`).join('') + `</optgroup>`;
    html += `<optgroup label="Carrefour" style="color: var(--theme-carr); font-weight: 900;">` + carrBranches.map(b => `<option value="${b}" data-store="carrefour" style="color: var(--text-primary); font-weight: 700;">${b}</option>`).join('') + `</optgroup>`;
-   
    sel.innerHTML = html;
 }
 
 document.getElementById('o-branch').addEventListener('change', function(e) {
-  const opt = this.options[this.selectedIndex];
-  const selectedStore = opt.getAttribute('data-store');
-  const selectedBranch = this.value;
-  const currentId = document.getElementById('o-id').value;
-
-  if (selectedStore && selectedStore !== activeStore) {
-    instantOrderStaffCheck(currentId, selectedStore, selectedBranch);
-  }
+  const opt = this.options[this.selectedIndex], selectedStore = opt.getAttribute('data-store'), selectedBranch = this.value, currentId = document.getElementById('o-id').value;
+  if (selectedStore && selectedStore !== activeStore) instantOrderStaffCheck(currentId, selectedStore, selectedBranch);
 });
 
 function processStaffMatch(val, match, defaultStore, forcedStore, forcedBranch) {
-  let isAttendanceVerified = false;
-  let targetStore = defaultStore;
-  let targetBranch = match.branch;
-  let relievedMsg = '';
+  let isAttendanceVerified = false, targetStore = defaultStore, targetBranch = match.branch, relievedMsg = '';
+  let latestClockInTime = 0, clockedInStore = null, clockedInBranch = null;
 
-  const storesToCheck = ['chandarana', 'carrefour'];
-  let latestClockInTime = 0;
-  let clockedInStore = null;
-  let clockedInBranch = null;
-
-  storesToCheck.forEach(store => {
+  ['chandarana', 'carrefour'].forEach(store => {
     try {
       const pData = JSON.parse(Storage.get(store + '_portal_data'));
       const s = pData?.staff?.find(x => x.id === val);
       if (s && s.lastTime) {
         const d = new Date(s.lastTime), now = new Date();
         if (d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
-          if (s.lastTime > latestClockInTime) {
-            latestClockInTime = s.lastTime;
-            clockedInStore = store;
-            clockedInBranch = s.branch; 
-          }
+          if (s.lastTime > latestClockInTime) { latestClockInTime = s.lastTime; clockedInStore = store; clockedInBranch = s.branch; }
         }
       }
     } catch(e) {}
   });
 
   if (clockedInStore && clockedInBranch) {
-    targetStore = clockedInStore;
-    targetBranch = clockedInBranch;
-    isAttendanceVerified = true;
+    targetStore = clockedInStore; targetBranch = clockedInBranch; isAttendanceVerified = true;
     if (targetStore !== defaultStore || targetBranch !== match.branch) relievedMsg = ' (Auto-detected)';
   }
 
-  if (forcedBranch && forcedStore) {
-    targetStore = forcedStore;
-    targetBranch = forcedBranch;
-    isAttendanceVerified = false; 
-    relievedMsg = '';
-  }
+  if (forcedBranch && forcedStore) { targetStore = forcedStore; targetBranch = forcedBranch; isAttendanceVerified = false; relievedMsg = ''; }
 
   if (targetStore !== activeStore) {
-    orderStoreState[activeStore].id = document.getElementById('o-id').value;
-    saveOrderState();
-
+    orderStoreState[activeStore].id = document.getElementById('o-id').value; saveOrderState();
     activeStore = targetStore;
     document.body.className = targetStore === 'chandarana' ? 'theme-chandarana' : 'theme-carrefour';
     var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     var meta = document.getElementById('theme-color-meta'); if (meta) meta.setAttribute('content', targetStore === 'chandarana' ? (isDark ? '#059669' : '#10b981') : (isDark ? '#2563eb' : '#3b82f6'));
-
-    document.getElementById('o-btn-chandarana').classList.toggle('active', targetStore === 'chandarana'); 
-    document.getElementById('o-btn-carrefour').classList.toggle('active', targetStore === 'carrefour');
-    
-    updatePillSlider('o-terminal-wrapper', 'o-pill-slider');
-    renderDynamicOrderContent(); restoreOrderState();
+    document.getElementById('o-btn-chandarana').classList.toggle('active', targetStore === 'chandarana'); document.getElementById('o-btn-carrefour').classList.toggle('active', targetStore === 'carrefour');
+    updatePillSlider('o-terminal-wrapper', 'o-pill-slider'); renderDynamicOrderContent(); restoreOrderState();
   }
 
   Storage.set('last_order_id_' + activeStore, val); 
   const msgDiv = document.getElementById('o-staffMsg'), nameInp = document.getElementById('o-name'), nameCont = document.getElementById('o-name-container'), expFields = document.getElementById('o-expanded-fields'), lockedSec = document.getElementById('o-locked-section');
   
-  currentOrderStaffFullname = match.name;
-  const parts = match.name.trim().split(' '); 
-  nameInp.value = parts.slice(0, 2).join(' ') + (parts.length>2?'...':'');
-
-  populateOrderBranches(); 
-  const sel = document.getElementById('o-branch');
-  sel.value = targetBranch;
+  currentOrderStaffFullname = match.name; const parts = match.name.trim().split(' '); nameInp.value = parts.slice(0, 2).join(' ') + (parts.length>2?'...':'');
+  populateOrderBranches(); const sel = document.getElementById('o-branch'); sel.value = targetBranch;
   
-  if (sel.value !== targetBranch) {
-      const opt = document.createElement('option');
-      opt.value = targetBranch;
-      opt.textContent = targetBranch;
-      opt.setAttribute('data-store', targetStore);
-      sel.appendChild(opt);
-      sel.value = targetBranch;
-  }
+  if (sel.value !== targetBranch) { const opt = document.createElement('option'); opt.value = targetBranch; opt.textContent = targetBranch; opt.setAttribute('data-store', targetStore); sel.appendChild(opt); sel.value = targetBranch; }
 
-  lockBranchSelect(isAttendanceVerified);
-  document.getElementById('o-phone').value = match.phone || '';
-  
+  lockBranchSelect(isAttendanceVerified); document.getElementById('o-phone').value = match.phone || '';
   nameCont.style.opacity = '1'; expFields.style.display='block'; lockedSec.classList.add('unlocked');
-  msgDiv.innerHTML = `<span class="dot"></span> ID Verified${relievedMsg}`; 
-  msgDiv.className = 'msg success'; 
+  msgDiv.innerHTML = `<span class="dot"></span> ID Verified${relievedMsg}`; msgDiv.className = 'msg success'; 
 }
 
 function instantOrderStaffCheck(val, forcedStore = null, forcedBranch = null) {
@@ -744,20 +781,15 @@ function instantOrderStaffCheck(val, forcedStore = null, forcedBranch = null) {
   const msgDiv = document.getElementById('o-staffMsg'), nameCont = document.getElementById('o-name-container'), nameInp = document.getElementById('o-name'), expFields = document.getElementById('o-expanded-fields'), lockedSec = document.getElementById('o-locked-section');
   
   if(val.length < 2) { 
-    msgDiv.innerHTML = ''; nameInp.value = ''; currentOrderStaffFullname = ''; document.getElementById('o-branch').innerHTML = ''; document.getElementById('o-phone').value = ''; nameCont.style.opacity = '0'; expFields.style.display='none'; lockedSec.classList.remove('unlocked'); 
-    Storage.remove('last_order_id_' + activeStore); return; 
+    msgDiv.innerHTML = ''; nameInp.value = ''; currentOrderStaffFullname = ''; document.getElementById('o-branch').innerHTML = ''; document.getElementById('o-phone').value = ''; nameCont.style.opacity = '0'; expFields.style.display='none'; lockedSec.classList.remove('unlocked'); Storage.remove('last_order_id_' + activeStore); return; 
   }
 
   let match = orderStaffCache.chandarana.find(s => s.id === val);
   let defaultStore = match ? 'chandarana' : null;
-  if (!match) {
-     match = orderStaffCache.carrefour.find(s => s.id === val);
-     if (match) defaultStore = 'carrefour';
-  }
+  if (!match) { match = orderStaffCache.carrefour.find(s => s.id === val); if (match) defaultStore = 'carrefour'; }
   
-  if(match) {
-    processStaffMatch(val, match, defaultStore, forcedStore, forcedBranch);
-  } else { 
+  if(match) { processStaffMatch(val, match, defaultStore, forcedStore, forcedBranch); } 
+  else { 
     msgDiv.innerHTML = '<span class="btn-spinner" style="width:14px;height:14px;"></span> Searching...'; msgDiv.className = 'msg';
     nameCont.style.opacity = '0'; expFields.style.display='none'; lockedSec.classList.remove('unlocked');
     
@@ -765,12 +797,7 @@ function instantOrderStaffCheck(val, forcedStore = null, forcedBranch = null) {
     .then(r => r.json())
     .then(res => {
        if (document.getElementById('o-id').value.trim() !== val) return;
-       if (res.found) { 
-         orderStaffCache[res.store].push({id: val, name: res.name, phone: res.phone, branch: res.branch}); 
-         processStaffMatch(val, {name: res.name, phone: res.phone, branch: res.branch}, res.store, forcedStore, forcedBranch);
-       } else { 
-         msgDiv.innerHTML = 'Invalid ID'; msgDiv.className = 'msg error'; 
-       }
+       if (res.found) { orderStaffCache[res.store].push({id: val, name: res.name, phone: res.phone, branch: res.branch}); processStaffMatch(val, {name: res.name, phone: res.phone, branch: res.branch}, res.store, forcedStore, forcedBranch); } else { msgDiv.innerHTML = 'Invalid ID'; msgDiv.className = 'msg error'; }
     }).catch(e => { if (document.getElementById('o-id').value.trim() === val) { msgDiv.innerHTML = 'Network Error'; msgDiv.className = 'msg error'; } });
   }
 }
@@ -779,56 +806,34 @@ const JUICES = { chandarana: ["ORANGE", "TROPICAL MIX", "MANGO", "PASSION", "APP
 
 function handleJuiceTouch(e, step) {
   const el = e.currentTarget;
-  
   if (e.type === 'touchmove') { el.hasScrolled = true; clearTimeout(el.pressTimer); return; }
   
   if (e.type === 'touchstart' || e.type === 'mousedown') {
     if (e.type === 'touchstart') el.ignoreMouse = true;
     if (e.type === 'mousedown' && el.ignoreMouse) return;
 
-    el.hasScrolled = false;
-    el.isLong = false;
-    clearTimeout(el.pressTimer);
-
-    el.pressTimer = setTimeout(() => {
-      el.isLong = true;
-      if(navigator.vibrate) navigator.vibrate(50);
-      el.setAttribute('data-val', "0"); el.innerText = '-'; el.classList.remove('has-value');
-    }, 400);
-  }
-  else if (e.type === 'touchend' || e.type === 'mouseup') {
-    if (e.type === 'mouseup' && el.ignoreMouse) {
-      setTimeout(() => el.ignoreMouse = false, 300);
-      return;
-    }
-
-    clearTimeout(el.pressTimer);
-    if (el.hasScrolled) return;
-    if (e.cancelable && e.type === 'touchend') e.preventDefault();
+    el.hasScrolled = false; el.isLong = false; clearTimeout(el.pressTimer);
+    el.pressTimer = setTimeout(() => { el.isLong = true; if(navigator.vibrate) navigator.vibrate(50); el.setAttribute('data-val', "0"); el.innerText = '-'; el.classList.remove('has-value'); }, 400);
+  } else if (e.type === 'touchend' || e.type === 'mouseup') {
+    if (e.type === 'mouseup' && el.ignoreMouse) { setTimeout(() => el.ignoreMouse = false, 300); return; }
+    clearTimeout(el.pressTimer); if (el.hasScrolled) return; if (e.cancelable && e.type === 'touchend') e.preventDefault();
 
     if(!el.isLong) {
-      let currentVal = parseInt(el.getAttribute('data-val')) || 0;
-      currentVal += step;
-      if(currentVal > 60) currentVal = 0;
+      let currentVal = parseInt(el.getAttribute('data-val')) || 0; currentVal += step; if(currentVal > 60) currentVal = 0;
       el.setAttribute('data-val', currentVal); el.innerText = currentVal === 0 ? '-' : currentVal; el.classList.toggle('has-value', currentVal > 0);
       
       const flavor = el.getAttribute('data-flavor'), vol = el.getAttribute('data-vol'), otherVol = vol === '5L' ? '3L' : '5L';
       const otherEl = document.querySelector(`.juice-input[data-flavor="${flavor}"][data-vol="${otherVol}"]`);
-      if (currentVal > 0 && otherEl && parseInt(otherEl.getAttribute('data-val')) > 0) {
-        otherEl.setAttribute('data-val', "0"); otherEl.innerText = '-'; otherEl.classList.remove('has-value');
-      }
+      if (currentVal > 0 && otherEl && parseInt(otherEl.getAttribute('data-val')) > 0) { otherEl.setAttribute('data-val', "0"); otherEl.innerText = '-'; otherEl.classList.remove('has-value'); }
     }
-  }
-  else { clearTimeout(el.pressTimer); }
+  } else { clearTimeout(el.pressTimer); }
 }
 
 function renderDynamicOrderContent() {
   let html = `<details class="order-group"><summary class="order-group-title">Juice Flavors</summary><div class="order-group-content" style="padding:0; border-top:none;"><div style="overflow-x:auto;"><table><thead><tr><th>Flavor</th><th>5 Litres</th><th>3 Litres</th></tr></thead><tbody>`;
   JUICES[activeStore].forEach(flavor => { 
     html += `<tr><td class="flavor-name">${flavor}</td>`; 
-    ["5L", "3L"].forEach(v => { 
-      html += `<td><div class="square-input juice-input" data-flavor="${flavor}" data-vol="${v}" data-val="0" ontouchstart="handleJuiceTouch(event, ${parseInt(v)})" ontouchmove="handleJuiceTouch(event, 0)" ontouchend="handleJuiceTouch(event, ${parseInt(v)})" ontouchcancel="handleJuiceTouch(event, 0)" onmousedown="handleJuiceTouch(event, ${parseInt(v)})" onmouseup="handleJuiceTouch(event, ${parseInt(v)})" onmouseleave="handleJuiceTouch(event, 0)">-</div></td>`; 
-    }); 
+    ["5L", "3L"].forEach(v => { html += `<td><div class="square-input juice-input" data-flavor="${flavor}" data-vol="${v}" data-val="0" ontouchstart="handleJuiceTouch(event, ${parseInt(v)})" ontouchmove="handleJuiceTouch(event, 0)" ontouchend="handleJuiceTouch(event, ${parseInt(v)})" ontouchcancel="handleJuiceTouch(event, 0)" onmousedown="handleJuiceTouch(event, ${parseInt(v)})" onmouseup="handleJuiceTouch(event, ${parseInt(v)})" onmouseleave="handleJuiceTouch(event, 0)">-</div></td>`; }); 
     html += `</tr>`; 
   }); 
   html += `</tbody></table></div></div></details>`;
@@ -856,7 +861,6 @@ function processOrder(e) {
     let flavorKey = flavor; if (["TREE TOMATO", "HIBISCUS", "TAMARIND", "BEETROOT", "TANGERINE", "CARROT"].includes(flavor)) { flavorKey = activeStore === 'chandarana' ? `${flavor} ` : flavor; } 
     let val5 = document.querySelector(`.juice-input[data-flavor="${flavor}"][data-vol="5L"]`)?.getAttribute('data-val') || "0"; let val3 = document.querySelector(`.juice-input[data-flavor="${flavor}"][data-vol="3L"]`)?.getAttribute('data-val') || "0"; let qty = val5 !== "0" ? val5 : (val3 !== "0" ? val3 : "0"); 
     
-    // Writes "15 Litres" to payload
     if(qty !== "0") { payload[(activeStore==='chandarana'?"JUICE (5 LITRES/3 LITRES)":"JUICE (5 ITRES / 3 LITRES)") + ` [${flavorKey}]`] = qty + " Litres"; hasJuices = true; juiceHtml += `<li style="margin-bottom:4px;">${flavor} - ${qty} L</li>`; } 
   });
   juiceHtml += `</ul></div>`; if(hasJuices) html += juiceHtml;
@@ -896,36 +900,19 @@ async function confirmAndSendOrder() {
     const res = await (await fetch(SCRIPT_URL, { method: "POST", headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'saveOrder', store: targetSheet, data: pendingOrderPayload }) })).json();
     if (!res.ok) throw new Error(res.error);
     
-    document.getElementById('orderConfirmModal').style.display = 'none'; 
-    document.getElementById('orderForm').style.display = 'none'; 
-    document.getElementById('orderTopBar').style.display = 'none'; 
-    document.getElementById('orderSuccessScreen').style.display = 'flex';
+    document.getElementById('orderConfirmModal').style.display = 'none'; document.getElementById('orderForm').style.display = 'none'; document.getElementById('orderTopBar').style.display = 'none'; document.getElementById('orderSuccessScreen').style.display = 'flex';
     
-    // WIPE ALL STATE AFTER SUCCESSFUL ORDER
-    orderState = { chandarana: { juices: {}, fresh: [], bottles: [], haccp: [] }, carrefour: { juices: {}, fresh: [], bottles: [], haccp: [] } };
-    orderStoreState = { chandarana: { id: '' }, carrefour: { id: '' } };
-    Storage.remove('last_order_id_chandarana');
-    Storage.remove('last_order_id_carrefour');
-    document.getElementById('o-id').value = '';
-    document.getElementById('o-notes').value = '';
+    orderState = { chandarana: { juices: {}, fresh: [], bottles: [], haccp: [] }, carrefour: { juices: {}, fresh: [], bottles: [], haccp: [] } }; orderStoreState = { chandarana: { id: '' }, carrefour: { id: '' } }; Storage.remove('last_order_id_chandarana'); Storage.remove('last_order_id_carrefour'); document.getElementById('o-id').value = ''; document.getElementById('o-notes').value = '';
 
   } catch (err) { alert(err.message); }
   btn.disabled = false; btn.innerText = 'Confirm & Send';
 }
 
 function resetOrderForm() { 
-  document.getElementById('orderSuccessScreen').style.display = 'none'; 
-  document.getElementById('orderTopBar').style.display = 'flex'; 
-  document.getElementById('orderForm').style.display = 'block'; 
-  
-  // Enforce blank slate layout
-  document.getElementById('o-id').value = ''; 
-  document.getElementById('o-notes').value = ''; 
-  
-  renderDynamicOrderContent(); 
-  instantOrderStaffCheck(''); 
+  document.getElementById('orderSuccessScreen').style.display = 'none'; document.getElementById('orderTopBar').style.display = 'flex'; document.getElementById('orderForm').style.display = 'block'; 
+  document.getElementById('o-id').value = ''; document.getElementById('o-notes').value = ''; 
+  renderDynamicOrderContent(); instantOrderStaffCheck(''); 
 }
-
 
 // ==========================================
 // ATTENDANCE SYSTEM LOGIC
@@ -956,26 +943,18 @@ function switchTerminalAtt(term, isInitialOpen = false) {
   staff = []; branches = []; lastSelectedBranch = ""; lastValidatedId = "";
   document.getElementById('branch').innerHTML = '<option value="">Loading...</option>';
   
-  document.getElementById('attSuccessScreen').style.display = 'none';
-  document.getElementById('attMainForm').style.display = 'block';
-  document.getElementById('attMainContainer').style.overflow = 'hidden';
+  document.getElementById('attSuccessScreen').style.display = 'none'; document.getElementById('attMainForm').style.display = 'block'; document.getElementById('attMainContainer').style.overflow = 'hidden';
   
   document.body.className = `theme-${currentTerminal}`;
   const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   const hexColor = currentTerminal === 'chandarana' ? (isDark ? '#059669' : '#10b981') : (isDark ? '#2563eb' : '#3b82f6');
   const meta = document.getElementById('theme-color-meta'); if (meta) meta.setAttribute('content', hexColor);
   
-  const title = document.getElementById('storeSign');
-  title.innerText = currentTerminal.charAt(0).toUpperCase() + currentTerminal.slice(1);
-  triggerSignAnimation();
+  const title = document.getElementById('storeSign'); title.innerText = currentTerminal.charAt(0).toUpperCase() + currentTerminal.slice(1); triggerSignAnimation();
   
-  document.getElementById('a-btn-chandarana').classList.toggle('active', currentTerminal === 'chandarana');
-  document.getElementById('a-btn-carrefour').classList.toggle('active',  currentTerminal === 'carrefour');
-  updatePillSlider('a-terminal-wrapper', 'a-pill-slider');
+  document.getElementById('a-btn-chandarana').classList.toggle('active', currentTerminal === 'chandarana'); document.getElementById('a-btn-carrefour').classList.toggle('active',  currentTerminal === 'carrefour'); updatePillSlider('a-terminal-wrapper', 'a-pill-slider');
   
-  resetStepsFrom(1);
-  document.getElementById('step1').classList.add('activeStep');
-  document.getElementById('staffID').value = ''; 
+  resetStepsFrom(1); document.getElementById('step1').classList.add('activeStep'); document.getElementById('staffID').value = ''; 
   
   initAppAtt();
 }
@@ -993,13 +972,7 @@ function populateBranches(list) {
   
   if (select.innerHTML !== options) { select.innerHTML = options; }
   
-  if (currentVal) { 
-    select.value = currentVal; 
-    lastSelectedBranch = currentVal;
-    showSuccess('branchMsg', 'Branch Selected');
-  } else {
-    clearMsg('branchMsg');
-  }
+  if (currentVal) { select.value = currentVal; lastSelectedBranch = currentVal; showSuccess('branchMsg', 'Branch Selected'); } else { clearMsg('branchMsg'); }
 }
 
 function restoreUserState() {
@@ -1014,10 +987,7 @@ function restoreUserState() {
 
 function initAppAtt() {
   purgeCacheAtMidnight(); 
-
-  const myId = ++activeFetchId;
-  const cacheKey = currentTerminal + '_portal_data';
-  let cached = false;
+  const myId = ++activeFetchId; const cacheKey = currentTerminal + '_portal_data'; let cached = false;
   
   try {
     const raw = Storage.get(cacheKey);
@@ -1029,16 +999,8 @@ function initAppAtt() {
     const changed = JSON.stringify(branches) !== JSON.stringify(data.branches) || JSON.stringify(staff) !== JSON.stringify(data.staff);
     staff = data.staff || []; branches = data.branches || [];
     try { Storage.set(cacheKey, JSON.stringify({staff, branches})); } catch(e) {}
-    
-    if (!cached || changed) { 
-      populateBranches(branches); 
-      if (!document.getElementById('staffID').value) {
-        restoreUserState(); 
-      }
-    } 
-  }).catch(() => {
-    if (myId === activeFetchId && branches.length === 0) document.getElementById('branch').innerHTML = '<option value="">Offline — waiting for connection</option>';
-  });
+    if (!cached || changed) { populateBranches(branches); if (!document.getElementById('staffID').value) { restoreUserState(); } } 
+  }).catch(() => { if (myId === activeFetchId && branches.length === 0) document.getElementById('branch').innerHTML = '<option value="">Offline — waiting for connection</option>'; });
 }
 
 function activateStep(n) { document.getElementById('step'+n).classList.add('activeStep'); }
@@ -1046,172 +1008,68 @@ function resetStepsFrom(n) {
   for (let i = n; i <= 4; i++) { const el = document.getElementById('step'+i); if (el) el.classList.remove('activeStep'); }
   if (n <= 2) { staffName = ''; clearMsg('staffMsg'); staffRestrictionError = null; lastValidatedId = ""; }
   if (n <= 3) { coords = null; clearMsg('gpsMsg'); }
-  if (n <= 4) { 
-    photo = null; stopCamera(); clearMsg('cameraMsg'); document.getElementById('successPhoto').src = '';
-    const btn = document.getElementById('openCameraBtn'); 
-    if(btn) { btn.textContent = 'Take Selfie'; btn.disabled = false; } 
-  }
+  if (n <= 4) { photo = null; stopCamera(); clearMsg('cameraMsg'); document.getElementById('successPhoto').src = ''; const btn = document.getElementById('openCameraBtn'); if(btn) { btn.textContent = 'Take Selfie'; btn.disabled = false; } }
 }
 
 function resetAttForm() {
-  document.getElementById('attSuccessScreen').style.display='none';
-  document.getElementById('attMainForm').style.display='block';
-  document.getElementById('attMainContainer').style.overflow = 'hidden';
-  document.getElementById('successPhoto').style.opacity = '1';
-  
-  document.getElementById('staffID').value = ''; 
-  resetStepsFrom(3); 
-  handleBranchChange(true);
-  initAppAtt();
+  document.getElementById('attSuccessScreen').style.display='none'; document.getElementById('attMainForm').style.display='block'; document.getElementById('attMainContainer').style.overflow = 'hidden'; document.getElementById('successPhoto').style.opacity = '1';
+  document.getElementById('staffID').value = ''; resetStepsFrom(3); handleBranchChange(true); initAppAtt();
 }
 
 function showSuccess(id,txt){ const e=document.getElementById(id); e.innerHTML=`<span class="dot"></span> ${txt}`; e.className='msg success'; }
 function showError(id,txt)  { const e=document.getElementById(id); e.innerText=txt; e.className='msg error'; }
 function clearMsg(id)       { const e=document.getElementById(id); e.innerText=''; e.className='msg'; }
 
-// PERFECT GEOMETRIC FLIP ANIMATION FOR PHOTO ZOOM (DECOUPLED FROM BACKGROUND)
 function openZoom() {
-  const container = document.getElementById('photoZoomContainer');
-  const bg = document.getElementById('photoZoomBg');
-  const overlayImg = document.getElementById('zoomedImage');
-  const sourceImg = document.getElementById('successPhoto');
-
+  const container = document.getElementById('photoZoomContainer'), bg = document.getElementById('photoZoomBg'), overlayImg = document.getElementById('zoomedImage'), sourceImg = document.getElementById('successPhoto');
   const rect = sourceImg.getBoundingClientRect();
-  overlayImg.src = sourceImg.src;
-  
-  overlayImg.style.transition = 'none';
-  overlayImg.style.left = rect.left + 'px';
-  overlayImg.style.top = rect.top + 'px';
-  overlayImg.style.width = rect.width + 'px';
-  overlayImg.style.height = rect.height + 'px';
-  overlayImg.style.borderRadius = '50%';
-  
-  container.style.display = 'block';
-  void container.offsetWidth; 
-  sourceImg.style.opacity = '0'; 
-  
+  overlayImg.src = sourceImg.src; overlayImg.style.transition = 'none'; overlayImg.style.left = rect.left + 'px'; overlayImg.style.top = rect.top + 'px'; overlayImg.style.width = rect.width + 'px'; overlayImg.style.height = rect.height + 'px'; overlayImg.style.borderRadius = '50%';
+  container.style.display = 'block'; void container.offsetWidth; sourceImg.style.opacity = '0'; 
   overlayImg.style.transition = 'all 0.4s cubic-bezier(0.25, 1, 0.4, 1)';
   const targetW = Math.min(window.innerWidth * 0.85, 400); 
-  
-  overlayImg.style.left = ((window.innerWidth - targetW) / 2) + 'px';
-  overlayImg.style.top = ((window.innerHeight - targetW) / 2) + 'px';
-  overlayImg.style.width = targetW + 'px';
-  overlayImg.style.height = targetW + 'px';
-  overlayImg.style.borderRadius = '24px';
-  
+  overlayImg.style.left = ((window.innerWidth - targetW) / 2) + 'px'; overlayImg.style.top = ((window.innerHeight - targetW) / 2) + 'px'; overlayImg.style.width = targetW + 'px'; overlayImg.style.height = targetW + 'px'; overlayImg.style.borderRadius = '24px';
   bg.classList.add('show');
 }
-
 function closeZoom() {
-  const container = document.getElementById('photoZoomContainer');
-  const bg = document.getElementById('photoZoomBg');
-  const overlayImg = document.getElementById('zoomedImage');
-  const sourceImg = document.getElementById('successPhoto');
-  
+  const container = document.getElementById('photoZoomContainer'), bg = document.getElementById('photoZoomBg'), overlayImg = document.getElementById('zoomedImage'), sourceImg = document.getElementById('successPhoto');
   const rect = sourceImg.getBoundingClientRect();
-  
-  overlayImg.style.left = rect.left + 'px';
-  overlayImg.style.top = rect.top + 'px';
-  overlayImg.style.width = rect.width + 'px';
-  overlayImg.style.height = rect.height + 'px';
-  overlayImg.style.borderRadius = '50%';
-  
-  bg.classList.remove('show');
-  
-  setTimeout(() => { 
-    container.style.display = 'none'; 
-    sourceImg.style.opacity = '1'; 
-  }, 400);
+  overlayImg.style.left = rect.left + 'px'; overlayImg.style.top = rect.top + 'px'; overlayImg.style.width = rect.width + 'px'; overlayImg.style.height = rect.height + 'px'; overlayImg.style.borderRadius = '50%'; bg.classList.remove('show');
+  setTimeout(() => { container.style.display = 'none'; sourceImg.style.opacity = '1'; }, 400);
 }
 
 function handleBranchChange(isInit = false) {
   const val = document.getElementById('branch').value;
   if (!val) { resetStepsFrom(2); clearMsg('branchMsg'); lastSelectedBranch = ""; return; }
-  
   Storage.set('last_branch_' + currentTerminal, val); showSuccess('branchMsg', 'Branch Selected');
-  
-  if (lastSelectedBranch !== val && !isInit) { 
-    document.getElementById('staffID').value = '';
-    resetStepsFrom(2); 
-  }
-  
-  lastSelectedBranch = val;
-  if (!document.getElementById('step2').classList.contains('activeStep')) { activateStep(2); }
+  if (lastSelectedBranch !== val && !isInit) { document.getElementById('staffID').value = ''; resetStepsFrom(2); }
+  lastSelectedBranch = val; if (!document.getElementById('step2').classList.contains('activeStep')) { activateStep(2); }
   const staffEl = document.getElementById('staffID'); if (staffEl.value.length >= 2) { handleStaffInput(); }
 }
 document.getElementById('branch').addEventListener('change', () => handleBranchChange(false));
 
 function handleStaffInput() {
-  const val = document.getElementById('staffID').value.trim(); 
-  staffRestrictionError = null; 
+  const val = document.getElementById('staffID').value.trim(); staffRestrictionError = null; 
   if (val.length < 2) { lastValidatedId = ""; resetStepsFrom(3); clearMsg('staffMsg'); return; }
   
   const match = staff.find(s => s.id === val);
   if (match) {
-    const isSameUser = (lastValidatedId === val);
-    lastValidatedId = val;
-    
-    staffName = match.name;
-    let lastAction = match.status; 
-    let lastTime = match.lastTime;
+    const isSameUser = (lastValidatedId === val); lastValidatedId = val; staffName = match.name;
+    let lastAction = match.status; let lastTime = match.lastTime;
+    try { const localState = JSON.parse(Storage.get('local_att_state')) || {}; const myLocal = localState[val]; const todayStr = new Date().toDateString(); if (myLocal && myLocal.date === todayStr) { if (!lastTime || myLocal.ts > lastTime) { lastAction = myLocal.action; lastTime = myLocal.ts; } } } catch(e) {}
+    if (lastTime) { const d = new Date(lastTime), now = new Date(); if (d.getDate() !== now.getDate() || d.getMonth() !== now.getMonth() || d.getFullYear() !== now.getFullYear()) { lastAction = null; } }
 
-    // LIGHTWEIGHT LOCAL MEMORY CHECK - Prevents cheating via refresh
-    try {
-      const localState = JSON.parse(Storage.get('local_att_state')) || {};
-      const myLocal = localState[val];
-      const todayStr = new Date().toDateString();
-      if (myLocal && myLocal.date === todayStr) {
-         // Overwrite server state if local is newer (happens instantly)
-         if (!lastTime || myLocal.ts > lastTime) {
-            lastAction = myLocal.action;
-            lastTime = myLocal.ts;
-         }
-      }
-    } catch(e) {}
-
-    // Verify Date Reset
-    if (lastTime) {
-      const d = new Date(lastTime);
-      const now = new Date();
-      if (d.getDate() !== now.getDate() || d.getMonth() !== now.getMonth() || d.getFullYear() !== now.getFullYear()) {
-        lastAction = null; 
-      }
-    }
-
-    if (lastAction === 'Clock Out') { 
-      staffRestrictionError = 'You have already clocked out today.'; 
-    } else if (lastAction === 'Clock In') {
-      const hoursSince = (Date.now() - lastTime) / (1000 * 60 * 60);
-      const currentHour = new Date().getHours();
-      
-      // 6-HOUR & 7 PM EXEMPTION LOGIC
-      if (hoursSince < 6 && currentHour < 19) { 
-        staffRestrictionError = 'You already clocked in, clock out at the end of your shift.'; 
-      }
+    if (lastAction === 'Clock Out') { staffRestrictionError = 'You have already clocked out today.'; } 
+    else if (lastAction === 'Clock In') {
+      const hoursSince = (Date.now() - lastTime) / (1000 * 60 * 60); const currentHour = new Date().getHours();
+      if (hoursSince < 6 && currentHour < 19) { staffRestrictionError = 'You already clocked in, clock out at the end of your shift.'; }
       currentAction = 'Clock Out';
-    } else { 
-      currentAction = 'Clock In'; 
-    }
+    } else { currentAction = 'Clock In'; }
     
-    if (currentAction) {
-      const btn = document.getElementById('openCameraBtn');
-      if (btn) btn.textContent = currentAction;
-    }
+    if (currentAction) { const btn = document.getElementById('openCameraBtn'); if (btn) btn.textContent = currentAction; }
 
-    const msgEl = document.getElementById('staffMsg'); msgEl.style.opacity = '1';
-    showSuccess('staffMsg', `Welcome ${staffName}`);
-    
-    if (!isSameUser) {
-      if (document.getElementById('step4').classList.contains('activeStep')) resetStepsFrom(4);
-      if (!document.getElementById('step3').classList.contains('activeStep')) activateStep(3);
-    } else {
-      if (!document.getElementById('step3').classList.contains('activeStep')) activateStep(3);
-    }
-  } else { 
-    lastValidatedId = ""; 
-    resetStepsFrom(3); 
-    showError('staffMsg','Invalid Staff ID. Please check.'); 
-  }
+    const msgEl = document.getElementById('staffMsg'); msgEl.style.opacity = '1'; showSuccess('staffMsg', `Welcome ${staffName}`);
+    if (!isSameUser) { if (document.getElementById('step4').classList.contains('activeStep')) resetStepsFrom(4); if (!document.getElementById('step3').classList.contains('activeStep')) activateStep(3); } else { if (!document.getElementById('step3').classList.contains('activeStep')) activateStep(3); }
+  } else { lastValidatedId = ""; resetStepsFrom(3); showError('staffMsg','Invalid Staff ID. Please check.'); }
 }
 document.getElementById('staffID').oninput = handleStaffInput;
 
@@ -1234,22 +1092,9 @@ function doVerifyGPS(isRetry) {
       const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(coords.latitude*Math.PI/180)*Math.cos(b[1]*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
       const dist = R * 2 * Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
       const maxDist = isRetry ? 350 : 250;
-      if (dist > maxDist) { if (!isRetry && navigator.onLine) { setTimeout(() => doVerifyGPS(true), 500); } else { showError('gpsMsg', dist>1000 ? `Too far (${(dist/1000).toFixed(1)}km)` : `Too far (${Math.round(dist)}m) — move closer`); } } 
-      else { showSuccess('gpsMsg','Location Verified'); activateStep(4); }
+      if (dist > maxDist) { if (!isRetry && navigator.onLine) { setTimeout(() => doVerifyGPS(true), 500); } else { showError('gpsMsg', dist>1000 ? `Too far (${(dist/1000).toFixed(1)}km)` : `Too far (${Math.round(dist)}m) — move closer`); } } else { showSuccess('gpsMsg','Location Verified'); activateStep(4); }
     },
-    err => { 
-      if(err.code===1) { 
-        showGuideModal('gps'); 
-        showError('gpsMsg', 'Location Denied. Tap Verify again.');
-      } else { 
-        if (!isRetry && navigator.onLine) { 
-          setTimeout(() => doVerifyGPS(true), 500); 
-        } else { 
-          showGuideModal('gps_signal'); 
-          showError('gpsMsg', 'Weak Signal. Tap Verify again.');
-        } 
-      } 
-    },
+    err => { if(err.code===1) { showGuideModal('gps'); showError('gpsMsg', 'Location Denied. Tap Verify again.'); } else { if (!isRetry && navigator.onLine) { setTimeout(() => doVerifyGPS(true), 500); } else { showGuideModal('gps_signal'); showError('gpsMsg', 'Weak Signal. Tap Verify again.'); } } },
     {enableHighAccuracy:true, timeout:15000, maximumAge: isRetry ? 0 : 30000}
   );
 }
@@ -1266,16 +1111,10 @@ function startCamera() {
   const btn = document.getElementById('openCameraBtn');
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { showGuideModal('camera'); return; }
 
-  btn.classList.add('loading');
-  btn.innerHTML = '<span class="btn-spinner" style="display:inline-block; vertical-align:middle; width:16px; height:16px; margin-right:8px;"></span><span style="vertical-align:middle;">Starting...</span>';
-  clearMsg('cameraMsg');
-
+  btn.classList.add('loading'); btn.innerHTML = '<span class="btn-spinner" style="display:inline-block; vertical-align:middle; width:16px; height:16px; margin-right:8px;"></span><span style="vertical-align:middle;">Starting...</span>'; clearMsg('cameraMsg');
   const constraints = { video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false };
   navigator.mediaDevices.getUserMedia(constraints)
-    .then(stream => {
-      videoStream = stream; const video = document.getElementById('cameraVideo'); video.srcObject = stream;
-      video.onloadedmetadata = () => { video.play().catch(()=>{}); document.getElementById('videoContainerWrapper').classList.add('expanded'); document.getElementById('cameraBackdrop').classList.add('show'); video.classList.add('live'); btn.classList.remove('loading'); btn.innerText = currentAction || 'Take Selfie'; };
-    })
+    .then(stream => { videoStream = stream; const video = document.getElementById('cameraVideo'); video.srcObject = stream; video.onloadedmetadata = () => { video.play().catch(()=>{}); document.getElementById('videoContainerWrapper').classList.add('expanded'); document.getElementById('cameraBackdrop').classList.add('show'); video.classList.add('live'); btn.classList.remove('loading'); btn.innerText = currentAction || 'Take Selfie'; }; })
     .catch(err => { console.warn('Camera failed:', err); btn.classList.remove('loading'); btn.innerText = currentAction || 'Take Selfie'; showGuideModal('camera'); });
 }
 
@@ -1285,26 +1124,19 @@ function capturePhoto() {
   const containerAspect = cw / ch, videoAspect = vw / vh;
   let sWidth, sHeight, startX, startY;
   
-  if (videoAspect > containerAspect) { sHeight = vh; sWidth = vh * containerAspect; startX = (vw - sWidth) / 2; startY = 0; } 
-  else { sWidth = vw; sHeight = vw / containerAspect; startX = 0; startY = (vh - sHeight) / 2; }
+  if (videoAspect > containerAspect) { sHeight = vh; sWidth = vh * containerAspect; startX = (vw - sWidth) / 2; startY = 0; } else { sWidth = vw; sHeight = vw / containerAspect; startX = 0; startY = (vh - sHeight) / 2; }
   
   const maxOutput = 720, scale = (sWidth > maxOutput || sHeight > maxOutput) ? (maxOutput / Math.max(sWidth, sHeight)) : 1;
   const canvas = document.createElement('canvas'); canvas.width = Math.round(sWidth * scale); canvas.height = Math.round(sHeight * scale);
   const ctx = canvas.getContext('2d');
   
-  ctx.translate(canvas.width, 0); ctx.scale(-1, 1); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(video, startX, startY, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+  ctx.translate(canvas.width, 0); ctx.scale(-1, 1); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(video, startX, startY, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
   
-  photo = canvas.toDataURL('image/jpeg', 0.85); document.getElementById('successPhoto').src = photo;
-  stopCamera(); 
+  photo = canvas.toDataURL('image/jpeg', 0.85); document.getElementById('successPhoto').src = photo; stopCamera(); 
   
-  // Update button UI & wait for cloud
   const btn = document.getElementById('openCameraBtn');
   btn.innerHTML = '<span class="btn-spinner" style="display:inline-block; vertical-align:middle; width:16px; height:16px; margin-right:8px;"></span><span style="vertical-align:middle;">Submitting...</span>';
-  btn.disabled = true;
-  
-  clearMsg('cameraMsg'); // Clear any sync message below the button
-  
+  btn.disabled = true; clearMsg('cameraMsg'); 
   submitAttendanceRealtime();
 }
 
@@ -1317,171 +1149,66 @@ function stopCamera() {
   setTimeout(() => { if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; } video.srcObject = null; }, 300);
 }
 
-// ----------------------------------------------------
-// AWAITED CLOUD SUBMISSION & OFFLINE SYSTEM
-// ----------------------------------------------------
 async function submitAttendanceRealtime() {
   const branch = document.getElementById('branch').value, staffID = document.getElementById('staffID').value;
   if (!branch || !staffID || !currentAction || !photo) return;
-
   Storage.set('last_staff_id_' + currentTerminal, staffID);
   
-  const payload = { 
-    name: staffName, id: staffID, branch: branch, action: currentAction, 
-    image: photo, lat: coords ? coords.latitude : 0, lng: coords ? coords.longitude : 0, 
-    clientTimestamp: new Date().toISOString() 
-  };
-  
-  const submittedAction = currentAction;
-  const btn = document.getElementById('openCameraBtn');
-  let isSuccess = false;
+  const payload = { name: staffName, id: staffID, branch: branch, action: currentAction, image: photo, lat: coords ? coords.latitude : 0, lng: coords ? coords.longitude : 0, clientTimestamp: new Date().toISOString() };
+  const submittedAction = currentAction, btn = document.getElementById('openCameraBtn'); let isSuccess = false;
 
-  // 1. AWAIT CLOUD UPLOAD FIRST
   if (navigator.onLine) {
     try {
-      const res = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'recordAttendance', data: payload, terminal: currentTerminal })
-      });
+      const res = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'recordAttendance', data: payload, terminal: currentTerminal }) });
       const j = await res.json();
-      
-      if (j.ok) {
-        isSuccess = true;
-      } else if (j.error && j.error.includes("busy")) {
-        // Server busy - we fallback to the offline queue rather than throwing an error
-        isSuccess = false;
-      } else {
-        // Absolute Server Rejection (e.g., already clocked in on another device)
-        showError('cameraMsg', j.error);
-        btn.textContent = currentAction || 'Take Selfie';
-        btn.disabled = false;
-        return; // STOP EXECUTION
-      }
-    } catch(err) {
-      // Network failed mid-flight -> proceed to offline queue
-    }
+      if (j.ok) { isSuccess = true; } else if (j.error && j.error.includes("busy")) { isSuccess = false; } else { showError('cameraMsg', j.error); btn.textContent = currentAction || 'Take Selfie'; btn.disabled = false; return; }
+    } catch(err) {}
   }
 
-  // 2. QUEUE OFFLINE IF FAILED/BUSY
-  if (!isSuccess) {
-     let queue = [];
-     try { queue = JSON.parse(Storage.get('attendance_queue')) || []; } catch(e){}
-     queue.push({ payload: payload, terminal: currentTerminal });
-     Storage.set('attendance_queue', JSON.stringify(queue));
-     processAttendanceQueue(); // Triggers background retry
-  }
+  if (!isSuccess) { let queue = []; try { queue = JSON.parse(Storage.get('attendance_queue')) || []; } catch(e){} queue.push({ payload: payload, terminal: currentTerminal }); Storage.set('attendance_queue', JSON.stringify(queue)); processAttendanceQueue(); }
 
-  // 3. SECURE LIGHT LOCAL MEMORY (Persists across reloads & purges at midnight)
-  let localState = {};
-  try { localState = JSON.parse(Storage.get('local_att_state')) || {}; } catch(e){}
-  localState[staffID] = { 
-    action: submittedAction, 
-    ts: Date.now(), 
-    date: new Date().toDateString(), 
-    branch: branch 
-  };
+  let localState = {}; try { localState = JSON.parse(Storage.get('local_att_state')) || {}; } catch(e){}
+  localState[staffID] = { action: submittedAction, ts: Date.now(), date: new Date().toDateString(), branch: branch };
   Storage.set('local_att_state', JSON.stringify(localState));
 
-  // 4. UPDATE MAIN PORTAL CACHE TO MATCH
-  try {
-    const cacheKey = currentTerminal + '_portal_data';
-    const cached = JSON.parse(Storage.get(cacheKey));
-    if (cached && cached.staff) {
-      const cachedMatch = cached.staff.find(s => s.id === staffID);
-      if (cachedMatch) {
-        cachedMatch.status = submittedAction;
-        cachedMatch.lastTime = Date.now();
-        cachedMatch.branch = branch;
-        Storage.set(cacheKey, JSON.stringify(cached));
-      }
-    }
-  } catch(e) {}
+  try { const cacheKey = currentTerminal + '_portal_data'; const cached = JSON.parse(Storage.get(cacheKey)); if (cached && cached.staff) { const cachedMatch = cached.staff.find(s => s.id === staffID); if (cachedMatch) { cachedMatch.status = submittedAction; cachedMatch.lastTime = Date.now(); cachedMatch.branch = branch; Storage.set(cacheKey, JSON.stringify(cached)); } } } catch(e) {}
   
-  // 5. CLEAR UI & SHOW SUCCESS SCREEN
-  clearMsg('cameraMsg');
-  finishSubmission(submittedAction);
-  btn.disabled = false;
+  clearMsg('cameraMsg'); finishSubmission(submittedAction); btn.disabled = false;
 }
 
 let isAttQueueSyncing = false;
 async function processAttendanceQueue() {
   if (isAttQueueSyncing || !navigator.onLine) return;
-  
-  let queue = [];
-  try { queue = JSON.parse(Storage.get('attendance_queue')) || []; } catch(e){}
-  if (queue.length === 0) return;
-
-  // AUTO-CLEANUP: Drop any offline data older than 6 hours so it doesn't hog storage
-  const now = Date.now();
-  const maxAge = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
-  const initialLength = queue.length;
+  let queue = []; try { queue = JSON.parse(Storage.get('attendance_queue')) || []; } catch(e){} if (queue.length === 0) return;
+  const now = Date.now(), maxAge = 6 * 60 * 60 * 1000, initialLength = queue.length;
   queue = queue.filter(item => (now - new Date(item.payload.clientTimestamp).getTime()) < maxAge);
-  
-  if (queue.length !== initialLength) {
-    Storage.set('attendance_queue', JSON.stringify(queue));
-    if (queue.length === 0) return;
-  }
+  if (queue.length !== initialLength) { Storage.set('attendance_queue', JSON.stringify(queue)); if (queue.length === 0) return; }
 
   isAttQueueSyncing = true;
-
   while (queue.length > 0 && navigator.onLine) {
     const item = queue[0];
     try {
-      const res = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'recordAttendance', data: item.payload, terminal: item.terminal })
-      });
+      const res = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'recordAttendance', data: item.payload, terminal: item.terminal }) });
       const j = await res.json();
-      
-      // If the server explicitly says "Server is busy", we stop and try again on the next tick
-      if (!j.ok && j.error && j.error.includes("busy")) {
-        break; 
-      }
-      
-      // Request successful OR explicitly rejected by business rules: Remove from local queue
-      queue.shift();
-      Storage.set('attendance_queue', JSON.stringify(queue));
-      
-    } catch (err) {
-      // Network disconnected / timeout: Stop processing, retry next loop
-      break; 
-    }
+      if (!j.ok && j.error && j.error.includes("busy")) { break; }
+      queue.shift(); Storage.set('attendance_queue', JSON.stringify(queue));
+    } catch (err) { break; }
   }
-  
   isAttQueueSyncing = false;
 }
-
-// Check every 15 seconds silently in the background
 setInterval(processAttendanceQueue, 15000);
 
-// ----------------------------------------------------
-
 function finishSubmission(action) {
-  const firstName = staffName.split(' ')[0] || staffName;
-  const hrs = new Date().getHours(), mins = new Date().getMinutes(), timeVal = hrs + (mins / 60.0);
+  const firstName = staffName.split(' ')[0] || staffName, hrs = new Date().getHours(), mins = new Date().getMinutes(), timeVal = hrs + (mins / 60.0);
   let msg='';
-
   if (action === 'Clock In') {
-    if (timeVal < 6.5)        { msg="Fantastic start — you're early today! Keep it up."; }
-    else if (timeVal <= 7.66) { msg="Great, you are on time for the morning shift."; }
-    else if (timeVal < 11.0)  { msg="Note: Late for morning shift."; }
-    else if (timeVal < 14.0)  { msg="Early for the second shift. Great job!"; }
-    else if (timeVal <= 14.66){ msg="On time for the second shift. Have a productive afternoon!"; }
-    else                      { msg="Note: Late for afternoon shift."; }
+    if (timeVal < 6.5) { msg="Fantastic start — you're early today! Keep it up."; } else if (timeVal <= 7.66) { msg="Great, you are on time for the morning shift."; } else if (timeVal < 11.0) { msg="Note: Late for morning shift."; } else if (timeVal < 14.0) { msg="Early for the second shift. Great job!"; } else if (timeVal <= 14.66) { msg="On time for the second shift. Have a productive afternoon!"; } else { msg="Note: Late for afternoon shift."; }
   } else {
-    if (hrs < 16) { msg="Have a wonderful afternoon!"; } else { msg="Have a restful night!"; }
-    if (hrs >= 18) { msg += " And remember to place your order."; }
+    if (hrs < 16) { msg="Have a wonderful afternoon!"; } else { msg="Have a restful night!"; } if (hrs >= 18) { msg += " And remember to place your order."; }
   }
 
-  document.getElementById('successBadge').textContent = action.toUpperCase();
-  document.getElementById('successName').textContent = firstName;
-  document.getElementById('successMsg').textContent = msg;
-  
-  document.getElementById('attMainContainer').style.overflow = 'visible';
-  document.getElementById('attMainForm').style.display = 'none';
-  document.getElementById('attSuccessScreen').style.display = 'flex';
+  document.getElementById('successBadge').textContent = action.toUpperCase(); document.getElementById('successName').textContent = firstName; document.getElementById('successMsg').textContent = msg;
+  document.getElementById('attMainContainer').style.overflow = 'visible'; document.getElementById('attMainForm').style.display = 'none'; document.getElementById('attSuccessScreen').style.display = 'flex';
 }
 </script>
 </body>
