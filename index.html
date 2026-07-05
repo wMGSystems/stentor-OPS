@@ -46,9 +46,8 @@
   --modal-overlay: rgba(0,0,0,0.65); 
   --soft-shadow: 0 10px 40px rgba(0,0,0,0.08), 0 0 20px rgba(0,0,0,0.04);
   
-  --dynamic-primary: var(--theme-chan);
-  --dynamic-light: var(--theme-chan-light);
-  --dynamic-border: var(--theme-chan-border);
+  --dynamic-primary: #0d9488; /* Teal blend for neutral state */
+  --dynamic-light: rgba(13, 148, 136, 0.15);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -76,10 +75,14 @@
   }
 }
 
+body.theme-chandarana {
+  --dynamic-primary: var(--theme-chan);
+  --dynamic-light: var(--theme-chan-light);
+}
+
 body.theme-carrefour {
   --dynamic-primary: var(--theme-carr);
   --dynamic-light: var(--theme-carr-light);
-  --dynamic-border: var(--theme-carr-border);
 }
 
 ::-webkit-scrollbar { display: none; }
@@ -121,7 +124,6 @@ input, textarea, select { -webkit-user-select: auto; user-select: auto; font-fam
 @keyframes bounceIn{ 0%{transform:scale(0.9);opacity:0} 60%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
 @keyframes spin{ to { transform: rotate(360deg); } }
 
-/* OPAQUE CONTAINERS WITH BLUR SHADOW */
 .solid-panel { background-color: var(--bg-primary) !important; border-radius: 24px; border: 1px solid var(--border-color); box-shadow: var(--soft-shadow); position: relative; z-index: 20; }
 
 /* WELCOME SCREEN */
@@ -188,10 +190,10 @@ input, textarea, select { -webkit-user-select: auto; user-select: auto; font-fam
 
 /* SHARED INPUTS & BUTTONS */
 .input-label { font-weight:700; font-size:12px; display:block; margin-bottom:8px; color:var(--label-text); text-transform:uppercase; letter-spacing:0.5px;}
+.req-star { color: var(--error-color); font-weight: 900; }
 .ui-input, .ui-select { width:100%; height:52px; padding:0 16px; border-radius:14px; border:1.5px solid var(--input-border); font-size:16px; font-weight:700; background:var(--input-bg); color:var(--text-primary); outline:none; -webkit-appearance:none; position:relative; z-index:10; cursor:pointer;}
 .ui-input:focus, .ui-select:focus { border-color:var(--dynamic-primary); background:var(--bg-primary); box-shadow:0 0 0 3px var(--dynamic-light); }
 .ui-input:read-only { background: var(--bg-secondary); color: var(--dynamic-primary); border-color: transparent; }
-#view-attendance .ui-input, #view-attendance .ui-select { border: 1.5px solid var(--dynamic-primary); }
 
 .btn-primary { width:100%; height:52px; border-radius:14px; border:none; font-size:15px; font-weight:800; background:var(--button-secondary-bg); color:var(--dynamic-primary); cursor:pointer; display:flex; align-items:center; justify-content:center; transition: transform 0.1s, opacity 0.2s, background 0.2s; }
 .btn-primary:active { transform: scale(0.97); }
@@ -201,16 +203,26 @@ input, textarea, select { -webkit-user-select: auto; user-select: auto; font-fam
 .btn-secondary:active { transform: scale(0.97); }
 .btn-spinner { border: 2px solid rgba(0,0,0,0.1); border-top-color: currentColor; border-radius: 50%; animation: spin 0.6s linear infinite; width:16px; height:16px; margin-right:8px;}
 
-/* ORDERS & SECTIONS SPECIFIC - ALL 4 BORDERS VISIBLE WITH THICK LEFT */
+/* ORDERS & SECTIONS SPECIFIC - CUSTOM BORDERS */
 .section-card, .order-group { 
   background-color: var(--bg-primary) !important; 
-  border: 1.5px solid var(--dynamic-primary); 
-  border-left: 6px solid var(--dynamic-primary); 
+  border: 1px solid rgba(156, 163, 175, 0.25); 
   border-radius: 16px; 
   margin-bottom: 15px; 
   overflow: hidden; 
+  position: relative;
   box-shadow: 0 4px 12px rgba(0,0,0,0.02);
 }
+.section-card::before, .order-group::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4.5px;
+  background: var(--dynamic-primary); z-index: 5; transition: background 0.4s ease;
+}
+/* Neutral blend state if no theme assigned */
+body:not(.theme-chandarana):not(.theme-carrefour) .section-card::before,
+body:not(.theme-chandarana):not(.theme-carrefour) .order-group::before {
+  background: linear-gradient(to bottom, var(--theme-chan), var(--theme-carr));
+}
+
 .section-card { padding: 14px; }
 #o-id { color: var(--dynamic-primary); font-weight: 900; font-size: 18px; }
 #o-id::placeholder { color: var(--text-tertiary); opacity: 0.8; font-weight: 700; }
@@ -220,9 +232,11 @@ input, textarea, select { -webkit-user-select: auto; user-select: auto; font-fam
 .order-group-title::-webkit-details-marker { display: none; }
 .order-group-title::after { content: '+'; font-size: 18px; color: var(--dynamic-primary); font-weight: 400;}
 .order-group[open] .order-group-title::after { content: '-'; transform: rotate(180deg); }
-.order-group-content { padding: 14px; border-top: 1.5px solid var(--dynamic-primary); }
+.order-group-content { padding: 14px; border-top: 1px solid rgba(156, 163, 175, 0.15); }
+
+/* Fainter table dividers */
 table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; }
-th, td { padding: 8px 4px; border-bottom: 1.5px solid var(--border-color); border-right: 1.5px solid var(--border-color); }
+th, td { padding: 8px 4px; border-bottom: 1px solid rgba(156, 163, 175, 0.15); border-right: 1px solid rgba(156, 163, 175, 0.15); }
 th { background: var(--bg-secondary); font-weight: 900; font-size: 12px; width: 35%; text-transform: uppercase;}
 th:first-child, td.flavor-name { position: sticky; left: 0; background: var(--bg-primary); z-index: 10; text-align: left; padding-left: 8px; font-weight:800; font-size:11px;}
 .square-input { width: 50px; height: 34px; border-radius: 10px; margin: 0 auto; background: var(--input-bg); border: 2px solid var(--input-border); color: var(--text-tertiary); font-weight: 900; display: flex; align-items: center; justify-content: center; }
@@ -237,13 +251,19 @@ th:first-child, td.flavor-name { position: sticky; left: 0; background: var(--bg
 .hanging-sign-wrapper { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: -5px; perspective: 800px; z-index: 30; width: 240px; pointer-events: none; }
 .chain { position: absolute; top: -30px; width: 5px; height: 34px; background: linear-gradient(to right, #9ca3af, #f3f4f6, #9ca3af); border-radius: 3px; box-shadow: inset 0 0 3px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2); z-index: 1; pointer-events: none; }
 .chain::before { content: ''; position: absolute; top: -6px; left: -3.5px; width: 12px; height: 12px; border-radius: 50%; background: var(--dynamic-primary); border: 3.5px solid #d1d5db; box-shadow: 0 8px 12px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.4), inset 0 2px 4px rgba(0,0,0,0.7); box-sizing: border-box; transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; }
+body:not(.theme-chandarana):not(.theme-carrefour) .chain::before { background: #0d9488; }
+
 .left-chain { left: 40px; } .right-chain { right: 40px; }
 .hanging-sign { background: var(--dynamic-primary); color: #ffffff; text-shadow: 0 2px 5px rgba(0,0,0,0.3); padding: 12px 10px; border-radius: 12px; font-weight: 900; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; text-align: center; width: 100%; display: block; box-sizing: border-box; box-shadow: 0 10px 25px var(--shadow-color), inset 0 -3px 0 rgba(0,0,0,0.15); transform-origin: top center; transition: color 0.4s ease, background-color 0.4s ease; position: relative; z-index: 2; }
+body:not(.theme-chandarana):not(.theme-carrefour) .hanging-sign { background: linear-gradient(135deg, var(--theme-chan), var(--theme-carr)); }
+
 @keyframes swing { 0% { transform: rotateX(0deg) rotateZ(0deg); } 20% { transform: rotateX(25deg) rotateZ(-3deg); } 40% { transform: rotateX(-15deg) rotateZ(2deg); } 60% { transform: rotateX(8deg) rotateZ(-1deg); } 80% { transform: rotateX(-3deg) rotateZ(0deg); } 100% { transform: rotateX(0deg) rotateZ(0deg); } }
 .hanging-sign.nudge { animation: swing 0.7s cubic-bezier(0.25, 1, 0.5, 1); }
 
 .network-indicator{ position:absolute;top:18px;left:18px;width:8px;height:8px;border-radius:50%; background:var(--dynamic-primary);opacity:0.9;transition:all 0.4s ease; box-shadow: 0 0 6px var(--dynamic-primary); }
+body:not(.theme-chandarana):not(.theme-carrefour) .network-indicator { background: #0d9488; box-shadow: 0 0 6px #0d9488; }
 .network-indicator.offline{background:var(--text-tertiary);opacity:0.4; box-shadow:none;}
+
 .step-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px 16px; position: relative; z-index: 5;}
 .step { opacity:0.3; pointer-events:none; transition: opacity 0.4s ease; position: relative; z-index: 10;}
 .step.activeStep { opacity:1; pointer-events:auto; animation:bounceIn 0.45s ease; }
@@ -393,20 +413,20 @@ th:first-child, td.flavor-name { position: sticky; left: 0; background: var(--bg
     <form id="profileForm" onsubmit="submitProfile(event)">
       <!-- STEP 1 -->
       <div class="section-card" id="p-step1">
-        <label class="input-label">ID Number</label>
-        <input type="tel" id="p-id" class="ui-input" placeholder="Enter ID to auto-fill" required autocomplete="off" oninput="instantProfileStaffCheck(this.value)">
+        <label class="input-label">ID Number <span class="req-star">*</span></label>
+        <input type="tel" id="p-id" class="ui-input" placeholder="Enter ID to begin" required autocomplete="off" oninput="instantProfileStaffCheck(this.value)">
         <div id="p-staffMsg" class="msg" style="min-height:20px; margin-top:4px;"></div>
         
-        <!-- Hidden initially until ID is long enough -->
+        <!-- Hidden initially until 8 chars are entered -->
         <div id="p-step1-fields" style="display:none; animation: sectionFadeIn 0.4s ease forwards;">
-          <label class="input-label" style="margin-top: 15px;">Full Name</label>
+          <label class="input-label" style="margin-top: 15px;">Full Name <span class="req-star">*</span></label>
           <input type="text" id="p-name" class="ui-input" required>
           
-          <label class="input-label" style="margin-top: 15px;">Phone Number</label>
+          <label class="input-label" style="margin-top: 15px;">Phone Number <span class="req-star">*</span></label>
           <input type="tel" id="p-phone" class="ui-input" required>
           
-          <label class="input-label" style="margin-top: 15px;">Default Branch</label>
-          <select id="p-branch" class="ui-select" required><option value="">Select Branch</option></select>
+          <label class="input-label" style="margin-top: 15px;">Default Branch <span class="req-star">*</span></label>
+          <select id="p-branch" class="ui-select" required onchange="triggerProfileBranchChange()"><option value="">Select Branch</option></select>
 
           <button type="button" class="btn-primary solid" onclick="nextProfileStep(2)" style="margin-top:20px;">Next →</button>
         </div>
@@ -414,15 +434,15 @@ th:first-child, td.flavor-name { position: sticky; left: 0; background: var(--bg
 
       <!-- STEP 2 -->
       <div class="section-card" id="p-step2" style="display:none;">
-        <label class="input-label">Email Address</label><input type="email" id="p-email" class="ui-input" placeholder="Optional">
+        <label class="input-label">Email Address <span class="req-star">*</span></label><input type="email" id="p-email" class="ui-input" required>
         
-        <label class="input-label" style="margin-top: 15px;">Alternative Contact</label><input type="tel" id="p-altContact" class="ui-input" placeholder="Optional">
+        <label class="input-label" style="margin-top: 15px;">Alternative Contact <span class="req-star">*</span></label><input type="tel" id="p-altContact" class="ui-input" required>
         
-        <label class="input-label" style="margin-top: 15px;">Physical Address (Area)</label><input type="text" id="p-address" class="ui-input" required>
+        <label class="input-label" style="margin-top: 15px;">Physical Address (Area) <span class="req-star">*</span></label><input type="text" id="p-address" class="ui-input" required>
         
-        <label class="input-label" style="margin-top: 15px;">Next of Kin Name</label><input type="text" id="p-nok" class="ui-input" required>
+        <label class="input-label" style="margin-top: 15px;">Next of Kin Name <span class="req-star">*</span></label><input type="text" id="p-nok" class="ui-input" required>
         
-        <label class="input-label" style="margin-top: 15px;">Next of Kin Main Contact</label><input type="tel" id="p-nokContact" class="ui-input" required>
+        <label class="input-label" style="margin-top: 15px;">Next of Kin Contact <span class="req-star">*</span></label><input type="tel" id="p-nokContact" class="ui-input" required>
         
         <div style="display:flex; gap:10px; margin-top:20px;">
           <button type="button" class="btn-secondary" onclick="prevProfileStep(1)" style="margin-top:0;">← Back</button>
@@ -432,20 +452,20 @@ th:first-child, td.flavor-name { position: sticky; left: 0; background: var(--bg
 
       <!-- STEP 3 -->
       <div class="section-card" id="p-step3" style="display:none;">
-        <label class="input-label">Bank Name</label><input type="text" id="p-bank" class="ui-input" required>
+        <label class="input-label">Bank Name <span class="req-star">*</span></label><input type="text" id="p-bank" class="ui-input" required>
         
-        <label class="input-label" style="margin-top: 15px;">Account Number</label><input type="tel" id="p-acc" class="ui-input" required>
+        <label class="input-label" style="margin-top: 15px;">Account Number <span class="req-star">*</span></label><input type="tel" id="p-acc" class="ui-input" required>
         
-        <label class="input-label" style="margin-top: 15px;">Confirm Account Number</label><input type="tel" id="p-acc-confirm" class="ui-input" required>
+        <label class="input-label" style="margin-top: 15px;">Confirm Account Number <span class="req-star">*</span></label><input type="tel" id="p-acc-confirm" class="ui-input" required>
         <div id="p-accMsg" class="msg" style="min-height:20px; margin-top:4px;"></div>
 
-        <label class="input-label" style="margin-top: 15px;">SHA Number</label><input type="text" id="p-sha" class="ui-input" required>
+        <label class="input-label" style="margin-top: 15px;">SHA Number <span class="req-star">*</span></label><input type="text" id="p-sha" class="ui-input" required>
         
-        <label class="input-label" style="margin-top: 15px;">NSSF Number</label><input type="text" id="p-nssf" class="ui-input" required>
+        <label class="input-label" style="margin-top: 15px;">NSSF Number <span class="req-star">*</span></label><input type="text" id="p-nssf" class="ui-input" required>
         
-        <label class="input-label" style="margin-top: 15px;">KRA PIN</label><input type="text" id="p-kra" class="ui-input" required style="text-transform:uppercase;">
+        <label class="input-label" style="margin-top: 15px;">KRA PIN <span class="req-star">*</span></label><input type="text" id="p-kra" class="ui-input" required style="text-transform:uppercase;">
         
-        <label class="input-label" style="margin-top: 15px;">Month & Year of Employment</label><input type="month" id="p-emp" class="ui-input" required>
+        <label class="input-label" style="margin-top: 15px;">Month & Year of Employment <span class="req-star">*</span></label><input type="month" id="p-emp" class="ui-input" required>
 
         <div style="display:flex; gap:10px; margin-top:20px;">
           <button type="button" class="btn-secondary" onclick="prevProfileStep(2)" style="margin-top:0;">← Back</button>
@@ -456,7 +476,8 @@ th:first-child, td.flavor-name { position: sticky; left: 0; background: var(--bg
     
     <div id="profileSuccess" style="display:none; text-align:center; padding: 30px 10px;">
       <div style="width:80px;height:80px;background:#10b981;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 16px;">✓</div>
-      <h2 style="font-weight:900; color:var(--text-primary);">Profile Saved!</h2>
+      <h2 style="font-weight:900; color:var(--text-primary);" id="profileSuccessText">Profile Saved!</h2>
+      <button class="btn-secondary" style="margin-top:20px;" onclick="goToMenu()">Return to Menu</button>
     </div>
   </div>
   
@@ -615,6 +636,7 @@ th:first-child, td.flavor-name { position: sticky; left: 0; background: var(--bg
 <div id="orderConfirmModal" class="modal-overlay">
   <div class="modal-box">
     <h3 id="modalShopName" style="margin:0 0 10px; font-size:24px; font-weight:900; text-transform:uppercase; color: var(--dynamic-primary);"></h3>
+    <p style="font-size: 13px; color: var(--warning-text); margin-bottom: 12px; font-weight: 800; line-height: 1.4;">⚠️ Please keenly confirm your order details before submitting.</p>
     <div id="orderSummaryDetails" class="receipt-content"></div>
     <div class="modal-actions-row">
       <button class="btn-modal btn-edit" onclick="closeConfirmModal()">Edit</button>
@@ -653,7 +675,6 @@ function purgeCacheAtMidnight() {
   }
 }
 
-// Ensure theme updates gracefully via JS if OS toggles
 function updateThemeColorMeta() {
   var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   var meta = document.getElementById('theme-color-meta');
@@ -816,9 +837,10 @@ function fetchPortalDataSilent() {
 // ==========================================
 function openProfile() {
   switchView('view-profile');
-  let term = Storage.get('selected_terminal') || 'chandarana';
-  document.body.className = term === 'chandarana' ? 'theme-chandarana' : 'theme-carrefour';
-  updateBGLayer(term === 'chandarana' ? 'layerChandarana' : 'layerCarrefour');
+  
+  // Set neutral state initially
+  document.body.className = '';
+  updateBGLayer('layerHub');
   
   document.getElementById('profileForm').reset();
   document.getElementById('p-step1-fields').style.display = 'none';
@@ -841,23 +863,49 @@ function openProfile() {
   document.getElementById('profileSuccess').style.display = 'none';
 }
 
+function triggerProfileBranchChange() {
+  const sel = document.getElementById('p-branch');
+  if(!sel.value) {
+      document.body.className = ''; updateBGLayer('layerHub'); return;
+  }
+  const opt = sel.options[sel.selectedIndex];
+  const isChan = opt.parentNode.label === 'Chandarana';
+  document.body.className = isChan ? 'theme-chandarana' : 'theme-carrefour';
+  updateBGLayer(isChan ? 'layerChandarana' : 'layerCarrefour');
+}
+
+function prefillProfileFromLocal(id) {
+  const saved = Storage.get('profile_saved_' + id);
+  if(saved) {
+      try {
+          const data = JSON.parse(saved);
+          ['email', 'altContact', 'address', 'nok', 'nokContact', 'bank', 'acc', 'sha', 'nssf', 'kra', 'emp'].forEach(k => {
+              const el = document.getElementById('p-' + k);
+              if(el && data[k]) el.value = data[k];
+          });
+          const accConf = document.getElementById('p-acc-confirm');
+          if(accConf && data['acc']) accConf.value = data['acc'];
+      } catch(e){}
+  }
+}
+
 function instantProfileStaffCheck(val) {
   val = val.trim();
-  if (val.length < 2) { 
-    document.getElementById('p-name').value = ''; 
-    document.getElementById('p-phone').value = ''; 
-    document.getElementById('p-branch').value = ''; 
-    document.getElementById('p-staffMsg').innerHTML = ''; 
-    document.getElementById('p-step1-fields').style.display = 'none';
+  const fieldsEl = document.getElementById('p-step1-fields');
+  const msgEl = document.getElementById('p-staffMsg');
+
+  // Collapse if backspaced below 8 chars
+  if (val.length < 8) { 
+    fieldsEl.style.display = 'none';
+    msgEl.innerHTML = ''; 
     return; 
   }
   
-  document.getElementById('p-step1-fields').style.display = 'block';
-
-  let match = orderStaffCache.chandarana.find(s => s.id === val); 
-  if (!match) match = orderStaffCache.carrefour.find(s => s.id === val);
+  // Exactly 8 or more -> verify
+  let match = orderStaffCache.chandarana.find(s => s.id === val) || orderStaffCache.carrefour.find(s => s.id === val);
   
   if (match) {
+    fieldsEl.style.display = 'block';
     document.getElementById('p-name').value = match.name;
     document.getElementById('p-phone').value = match.phone;
     
@@ -865,10 +913,14 @@ function instantProfileStaffCheck(val) {
     let bMatch = Array.from(branchSel.options).find(o => o.value === match.branch);
     if(bMatch) branchSel.value = match.branch;
     
-    document.getElementById('p-staffMsg').innerHTML = `<span class="dot"></span> ID found, auto-filled details.`; 
-    document.getElementById('p-staffMsg').className = 'msg success';
+    msgEl.innerHTML = `<span class="dot"></span> ID valid, details fetched.`; 
+    msgEl.className = 'msg success';
+    triggerProfileBranchChange();
+    prefillProfileFromLocal(val);
   } else {
-    document.getElementById('p-staffMsg').innerHTML = '';
+    fieldsEl.style.display = 'none';
+    msgEl.innerHTML = 'Invalid ID';
+    msgEl.className = 'msg error';
   }
 }
 
@@ -884,7 +936,7 @@ function validateProfileStep(step) {
         for(let id of req) { if(!document.getElementById(id).value.trim()) { showStepError(id); return false; } }
     }
     if(step === 2) {
-        const req = ['p-address', 'p-nok', 'p-nokContact'];
+        const req = ['p-email', 'p-altContact', 'p-address', 'p-nok', 'p-nokContact'];
         for(let id of req) { if(!document.getElementById(id).value.trim()) { showStepError(id); return false; } }
     }
     return true;
@@ -936,14 +988,26 @@ async function submitProfile(e) {
   };
   
   const btn = document.getElementById('profileSubmitBtn');
+  
+  // Smart Skip logic if nothing changed
+  const prevStr = Storage.get('profile_saved_' + payload.id);
+  if (prevStr && prevStr === JSON.stringify(payload)) {
+    document.getElementById('profileForm').style.display = 'none';
+    document.getElementById('profileSuccess').style.display = 'block';
+    document.getElementById('profileSuccessText').innerText = "You already updated your profile.";
+    return;
+  }
+
   btn.disabled = true; btn.innerHTML = '<span class="btn-spinner"></span> Saving...';
   
   try {
     const res = await (await fetch(SCRIPT_URL, { method: "POST", headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'saveProfile', data: payload }) })).json();
     if (!res.ok) throw new Error(res.error);
     
+    Storage.set('profile_saved_' + payload.id, JSON.stringify(payload));
     document.getElementById('profileForm').style.display = 'none';
     document.getElementById('profileSuccess').style.display = 'block';
+    document.getElementById('profileSuccessText').innerText = "Profile Saved!";
   } catch(err) {
     alert("Error saving profile: " + err.message);
   }
@@ -1146,12 +1210,12 @@ function processOrder(e) {
   });
   juiceHtml += `</ul></div>`; if(hasJuices) html += juiceHtml;
 
-  function formatList(title, commaStr) { if(!commaStr) return ''; let items = commaStr.split(',').map(s => s.trim()).filter(Boolean); return `<div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border-color);"><strong style="color:var(--dynamic-primary);">${title}</strong><ul style="margin:8px 0 0 20px; padding:0;">` + items.map(i => `<li style="margin-bottom:4px;">${i}</li>`).join('') + `</ul></div>`; }
+  function formatList(title, commaStr) { if(!commaStr) return ''; let items = commaStr.split(',').map(s => s.trim()).filter(Boolean); return `<div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(156, 163, 175, 0.15);"><strong style="color:var(--dynamic-primary);">${title}</strong><ul style="margin:8px 0 0 20px; padding:0;">` + items.map(i => `<li style="margin-bottom:4px;">${i}</li>`).join('') + `</ul></div>`; }
 
   if(payload["FRESH INPUTS"]) html += formatList("FRESH INPUTS", payload["FRESH INPUTS"]);
   if(payload["BOTTLES"]) html += formatList("BOTTLES", payload["BOTTLES"]);
   if(payload["HACCP SUPPLIES"]) html += formatList("HACCP SUPPLIES", payload["HACCP SUPPLIES"]);
-  if(payload["NOTES"]) html += `<div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border-color);"><strong style="color:var(--dynamic-primary);">NOTES</strong><br>${payload["NOTES"]}</div>`;
+  if(payload["NOTES"]) html += `<div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(156, 163, 175, 0.15);"><strong style="color:var(--dynamic-primary);">NOTES</strong><br>${payload["NOTES"]}</div>`;
 
   pendingOrderPayload = payload; 
   document.getElementById('modalShopName').innerText = activeStore.toUpperCase();
@@ -1165,7 +1229,7 @@ function downloadReceipt(btn) {
   const oldText = btn.innerHTML; btn.innerHTML = 'Wait...'; btn.disabled = true;
   const content = document.getElementById('orderSummaryDetails');
   
-  if (window.html2pdf && window.html2pdf().from) {
+  if (window.html2canvas) {
       const tempDiv = document.createElement('div');
       tempDiv.style.width = '600px'; tempDiv.style.padding = '30px'; 
       tempDiv.style.background = '#ffffff'; tempDiv.style.color = '#111827'; 
@@ -1185,20 +1249,19 @@ function downloadReceipt(btn) {
       document.body.appendChild(tempDiv);
       tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px';
       
-      if (window.html2canvas) {
-          window.html2canvas(tempDiv, { scale: 2, useCORS: true }).then(canvas => {
-              const a = document.createElement('a');
-              a.href = canvas.toDataURL('image/jpeg', 0.9);
-              a.download = 'Order_' + document.getElementById('o-id').value + '_' + Date.now() + '.jpg';
-              document.body.appendChild(a); a.click(); document.body.removeChild(a);
-              document.body.removeChild(tempDiv);
-              
-              btn.innerHTML = 'Saved!'; setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 2000); 
-          }).catch(e => {
-              btn.innerHTML = 'Error'; setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 2000); 
-              document.body.removeChild(tempDiv);
-          });
-      }
+      // Fast canvas execution
+      window.html2canvas(tempDiv, { scale: 1.2, useCORS: true, logging: false }).then(canvas => {
+          const a = document.createElement('a');
+          a.href = canvas.toDataURL('image/jpeg', 0.85);
+          a.download = 'Order_' + document.getElementById('o-id').value + '_' + Date.now() + '.jpg';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          document.body.removeChild(tempDiv);
+          
+          btn.innerHTML = 'Saved!'; setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 1500); 
+      }).catch(e => {
+          btn.innerHTML = 'Error'; setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 1500); 
+          document.body.removeChild(tempDiv);
+      });
   }
 }
 
@@ -1206,9 +1269,19 @@ async function confirmAndSendOrder() {
   const btn = document.getElementById('confirmSendBtn'); btn.disabled = true; btn.innerHTML = 'Wait...';
   try {
     const targetSheet = activeStore === 'chandarana' ? 'Chandarana' : 'Carrefour';
+    
+    // Smart Duplicate Append Logic Locally
+    const todayKey = `order_sent_${new Date().toDateString()}_${pendingOrderPayload["ID NO."]}_${activeStore}`;
+    if (Storage.get(todayKey)) {
+        pendingOrderPayload["NOTES"] = "[APPEND TO PREVIOUS ORDER] " + pendingOrderPayload["NOTES"];
+    }
+
     const res = await (await fetch(SCRIPT_URL, { method: "POST", headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'saveOrder', store: targetSheet, data: pendingOrderPayload }) })).json();
     if (!res.ok) throw new Error(res.error);
     
+    // Mark as sent today
+    Storage.set(todayKey, "true");
+
     document.getElementById('orderConfirmModal').style.display = 'none'; document.getElementById('orderFormInner').style.display = 'none'; document.getElementById('orderTopBar').style.display = 'none'; document.getElementById('orderSuccessScreen').style.display = 'flex';
     orderState = { chandarana: { juices: {}, fresh: [], bottles: [], haccp: [] }, carrefour: { juices: {}, fresh: [], bottles: [], haccp: [] } }; orderStoreState = { chandarana: { id: '' }, carrefour: { id: '' } }; Storage.remove('last_order_id_chandarana'); Storage.remove('last_order_id_carrefour'); document.getElementById('o-id').value = ''; document.getElementById('o-notes').value = '';
   } catch (err) { alert(err.message); }
@@ -1530,7 +1603,11 @@ function finishSubmission(action) {
   if (action === 'Clock In') { if (timeVal < 6.5) { msg="Fantastic start — you're early today! Keep it up."; } else if (timeVal <= 7.66) { msg="Great, you are on time for the morning shift."; } else if (timeVal < 11.0) { msg="Note: Late for morning shift."; } else if (timeVal < 14.0) { msg="Early for the second shift. Great job!"; } else if (timeVal <= 14.66) { msg="On time for the second shift. Have a productive afternoon!"; } else { msg="Note: Late for afternoon shift."; }
   } else { if (hrs < 16) { msg="Have a wonderful afternoon!"; } else { msg="Have a restful night!"; } if (hrs >= 18) { msg += " And remember to place your order."; } }
 
-  const tickColor = action === 'Clock In' ? '#10b981' : '#f59e0b';
+  let tickColor = '#f59e0b'; // Clock out default
+  if (action === 'Clock In') {
+      tickColor = currentTerminal === 'carrefour' ? '#3b82f6' : '#10b981';
+  }
+
   document.getElementById('successBadgeText').textContent = action.toUpperCase(); 
   
   const badge = document.getElementById('successBadge');
