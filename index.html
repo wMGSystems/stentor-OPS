@@ -308,24 +308,6 @@ th:first-child, td.flavor-name { position: sticky; left: 0; background: var(--bg
 </head>
 <body class="theme-welcome">
 
-<script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVy7MbFQmI6fVQM0ti52y05c0rc7-KvqUsU3Uq3WXzJ1CEqYP3vF0noIJbNtuL4nOT/exec";
-
-var Storage = { 
-  set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}, 
-  get:function(k){try{return localStorage.getItem(k)}catch(e){return null}}, 
-  remove:function(k){try{localStorage.removeItem(k)}catch(e){}} 
-};
-
-function purgeCacheAtMidnight() {
-  var today = new Date().toDateString(); 
-  if (Storage.get('cache_date') !== today) {
-    Storage.remove('chandarana_portal_data'); Storage.remove('carrefour_portal_data'); Storage.remove('order_staff_chandarana'); Storage.remove('order_staff_carrefour'); Storage.remove('local_att_state'); 
-    Storage.set('cache_date', today);
-  }
-}
-</script>
-
 <div class="doodle-bg"></div>
 <div id="layerWelcome" class="bg-layer layer-welcome active"></div>
 <div id="layerHub" class="bg-layer layer-hub"></div>
@@ -883,11 +865,23 @@ function switchTerminalOrder(store) {
 
 function loadOrderStaffBackground() {
   purgeCacheAtMidnight();
-  const cachedChan = localStorage.getItem('order_staff_chandarana'), cachedCarr = localStorage.getItem('order_staff_carrefour');
-  if (cachedChan && cachedCarr) { orderStaffCache.chandarana = JSON.parse(cachedChan); orderStaffCache.carrefour = JSON.parse(cachedCarr); }
+  // BUG FIX: changed localStorage directly to Storage wrapper
+  const cachedChan = Storage.get('order_staff_chandarana');
+  const cachedCarr = Storage.get('order_staff_carrefour');
+  
+  if (cachedChan && cachedCarr) { 
+      orderStaffCache.chandarana = JSON.parse(cachedChan); 
+      orderStaffCache.carrefour = JSON.parse(cachedCarr); 
+  }
   
   fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'getOrderStaff' }) })
-    .then(r => r.json()).then(res => { if(res.ok) { orderStaffCache = res.data; localStorage.setItem('order_staff_chandarana', JSON.stringify(res.data.chandarana)); localStorage.setItem('order_staff_carrefour', JSON.stringify(res.data.carrefour)); } }).catch(e => {});
+    .then(r => r.json()).then(res => { 
+        if(res.ok) { 
+            orderStaffCache = res.data; 
+            Storage.set('order_staff_chandarana', JSON.stringify(res.data.chandarana)); 
+            Storage.set('order_staff_carrefour', JSON.stringify(res.data.carrefour)); 
+        } 
+    }).catch(e => {});
 }
 
 let branchHoldTimer;
