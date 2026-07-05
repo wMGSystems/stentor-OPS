@@ -8,7 +8,8 @@
 <meta name="theme-color" id="theme-color-meta" content="#ffffff">
 <title>Stentor Operations</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<!-- Fixed library to properly allow rendering of the Order Receipts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
   function applyInitialTheme() {
@@ -28,6 +29,11 @@
   color-scheme: light dark;
   --bg-primary: #ffffff; 
   --bg-secondary: #f7f9fa;
+  
+  /* Glass and Glow properties */
+  --glass-bg: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.5);
+
   --text-primary: #111827; 
   --text-secondary: #4b5563; 
   --text-tertiary: #9ca3af;
@@ -37,17 +43,18 @@
   --button-secondary-bg: #eff6ff;
   --error-color: #ef4444; --warning-bg: #fef2f2; --warning-border: #fecaca; --warning-text: #b91c1c;
   --label-text: #6b7280;
+  
   --theme-chan: #10b981; 
   --theme-carr: #3b82f6; 
-  --theme-chan-light: rgba(16, 185, 129, 0.15);
-  --theme-carr-light: rgba(59, 130, 246, 0.15);
+  --theme-chan-light: rgba(16, 185, 129, 0.35);
+  --theme-carr-light: rgba(59, 130, 246, 0.35);
   --theme-chan-border: rgba(16, 185, 129, 0.4);
   --theme-carr-border: rgba(59, 130, 246, 0.4);
   --modal-overlay: rgba(0,0,0,0.65); 
   --soft-shadow: 0 10px 40px rgba(0,0,0,0.08), 0 0 20px rgba(0,0,0,0.04);
   
   --dynamic-primary: #0d9488; /* Teal blend for neutral state */
-  --dynamic-light: rgba(13, 148, 136, 0.15);
+  --dynamic-light: rgba(13, 148, 136, 0.3);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -55,6 +62,10 @@
     color-scheme: dark;
     --bg-primary: #1f2937; 
     --bg-secondary: #111827;
+
+    --glass-bg: rgba(31, 41, 55, 0.88);
+    --glass-border: rgba(75, 85, 99, 0.5);
+
     --text-primary: #f9fafb; 
     --text-secondary: #d1d5db; 
     --text-tertiary: #9ca3af;
@@ -64,10 +75,11 @@
     --button-secondary-bg: #1e3a8a;
     --error-color: #f87171; --warning-bg: #450a0a; --warning-border: #7f1d1d; --warning-text: #fca5a5;
     --label-text: #9ca3af;
+    
     --theme-chan: #059669; 
     --theme-carr: #2563eb; 
-    --theme-chan-light: rgba(5, 150, 105, 0.25);
-    --theme-carr-light: rgba(37, 99, 235, 0.25);
+    --theme-chan-light: rgba(5, 150, 105, 0.45);
+    --theme-carr-light: rgba(37, 99, 235, 0.45);
     --theme-chan-border: rgba(5, 150, 105, 0.6);
     --theme-carr-border: rgba(37, 99, 235, 0.6);
     --modal-overlay: rgba(0,0,0,0.85); 
@@ -100,7 +112,7 @@ input, textarea, select { -webkit-user-select: auto; user-select: auto; font-fam
 .view-section, .btn-primary, .btn-secondary, .pill-btn, .hanging-sign, .chip-span, .order-group-title { -webkit-user-select: none; user-select: none; }
 
 /* BACKGROUND LAYERS */
-.bg-layer { position: fixed; inset: 0; z-index: -5; opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
+.bg-layer { position: fixed; inset: 0; z-index: -5; opacity: 0; transition: opacity 0.6s ease; pointer-events: none; }
 .bg-layer.active { opacity: 1; }
 .bg-welcome { background: var(--bg-secondary); }
 .bg-hub { background: var(--bg-secondary); }
@@ -117,17 +129,25 @@ input, textarea, select { -webkit-user-select: auto; user-select: auto; font-fam
 }
 @media (prefers-color-scheme: dark) { .doodle-bg { filter: invert(1); opacity: 0.08; } }
 
-/* GLOBAL UI */
+/* GLOBAL UI & GLASSMORPHISM */
 .view-section { display: none; width: 100%; max-width: 440px; flex-direction: column; align-items: center; position: relative; opacity: 0; transform: translateY(15px); z-index: 10; }
 .view-section.active { display: flex; opacity: 1; animation: sectionFadeIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 @keyframes sectionFadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: none; } }
 @keyframes bounceIn{ 0%{transform:scale(0.9);opacity:0} 60%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
 @keyframes spin{ to { transform: rotate(360deg); } }
 
-.solid-panel { background-color: var(--bg-primary) !important; border-radius: 24px; border: 1px solid var(--border-color); box-shadow: var(--soft-shadow); position: relative; z-index: 20; }
+.solid-panel { 
+    background-color: var(--glass-bg) !important; 
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-radius: 24px; 
+    border: 1px solid var(--glass-border); 
+    box-shadow: 0 0 25px 4px var(--dynamic-light), 0 10px 40px rgba(0,0,0,0.1); 
+    position: relative; 
+    z-index: 20; 
+}
 
 /* WELCOME SCREEN */
-.welcome-section { display: none; width: 100%; max-width: 100% !important; height: 100vh; height: 100dvh; flex-direction: column; justify-content: space-between; padding: 10vh 20px 10vh 20px; box-sizing: border-box; position: absolute; inset: 0; z-index: 50; touch-action: none; overflow: hidden; }
+.welcome-section { display: none; width: 100%; max-width: 100% !important; height: 100vh; height: 100dvh; flex-direction: column; justify-content: space-between; padding: 10vh 20px 10vh 20px; box-sizing: border-box; position: absolute; inset: 0; z-index: 50; touch-action: none; overflow: hidden; cursor: pointer; }
 .welcome-section.active { display: flex; opacity: 1; }
 .welcome-top, .welcome-bottom { opacity: 0; transition: opacity 1.2s ease; }
 .welcome-top.show, .welcome-bottom.show { opacity: 1; }
@@ -174,7 +194,7 @@ input, textarea, select { -webkit-user-select: auto; user-select: auto; font-fam
 
 /* BACK BUTTONS */
 .inline-back-wrapper { width: 100%; max-width: 440px; display: flex; justify-content: flex-start; padding: 0 16px; margin-top: 16px; z-index: 20; }
-.inline-back { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; color: var(--text-secondary); padding: 14px 26px; border-radius: 50px; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
+.inline-back { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; color: var(--text-secondary); padding: 14px 26px; border-radius: 50px; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; box-shadow: 0 0 15px 2px var(--dynamic-light), 0 4px 12px rgba(0,0,0,0.1) !important;}
 .inline-back:active { transform: scale(0.92); }
 
 /* SHARED APP CONTAINER */
@@ -205,13 +225,14 @@ input, textarea, select { -webkit-user-select: auto; user-select: auto; font-fam
 
 /* ORDERS & SECTIONS SPECIFIC - CUSTOM BORDERS */
 .section-card, .order-group { 
-  background-color: var(--bg-primary) !important; 
-  border: 1px solid rgba(156, 163, 175, 0.25); 
+  background-color: var(--glass-bg) !important; 
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border); 
   border-radius: 16px; 
   margin-bottom: 15px; 
   overflow: hidden; 
   position: relative;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  box-shadow: 0 0 15px 2px var(--dynamic-light), 0 4px 12px rgba(0,0,0,0.05);
 }
 .section-card::before, .order-group::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4.5px;
@@ -228,7 +249,7 @@ body:not(.theme-chandarana):not(.theme-carrefour) .order-group::before {
 #o-id::placeholder { color: var(--text-tertiary); opacity: 0.8; font-weight: 700; }
 .locked-form { opacity: 0.4; pointer-events: none; transition: 0.4s; }
 .locked-form.unlocked { opacity: 1; pointer-events: auto; }
-.order-group-title { padding: 14px 16px; font-size: 14px; font-weight: 900; color: var(--text-primary); cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary); outline: none; list-style: none; }
+.order-group-title { padding: 14px 16px; font-size: 14px; font-weight: 900; color: var(--text-primary); cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: transparent; outline: none; list-style: none; }
 .order-group-title::-webkit-details-marker { display: none; }
 .order-group-title::after { content: '+'; font-size: 18px; color: var(--dynamic-primary); font-weight: 400;}
 .order-group[open] .order-group-title::after { content: '-'; transform: rotate(180deg); }
@@ -237,7 +258,7 @@ body:not(.theme-chandarana):not(.theme-carrefour) .order-group::before {
 /* Fainter table dividers */
 table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; }
 th, td { padding: 8px 4px; border-bottom: 1px solid rgba(156, 163, 175, 0.15); border-right: 1px solid rgba(156, 163, 175, 0.15); }
-th { background: var(--bg-secondary); font-weight: 900; font-size: 12px; width: 35%; text-transform: uppercase;}
+th { background: transparent; font-weight: 900; font-size: 12px; width: 35%; text-transform: uppercase;}
 th:first-child, td.flavor-name { position: sticky; left: 0; background: var(--bg-primary); z-index: 10; text-align: left; padding-left: 8px; font-weight:800; font-size:11px;}
 .square-input { width: 50px; height: 34px; border-radius: 10px; margin: 0 auto; background: var(--input-bg); border: 2px solid var(--input-border); color: var(--text-tertiary); font-weight: 900; display: flex; align-items: center; justify-content: center; }
 .square-input.has-value { background: var(--dynamic-primary); color: #fff; border-color: var(--dynamic-primary); }
@@ -297,7 +318,14 @@ body:not(.theme-chandarana):not(.theme-carrefour) .network-indicator { backgroun
 #attSuccessScreen { display:none;flex-direction:column;align-items:center; justify-content:center; padding:10px 4px;text-align:center;width:100%; }
 .success-photo{ width: 120px; height: 120px; object-fit: cover; border-radius: 50%; box-shadow: 0 0 0 4px var(--dynamic-primary); margin-bottom: 20px; animation: bounceIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); cursor: zoom-in; position: relative; z-index: 10; -webkit-tap-highlight-color: transparent; }
 .success-badge{ color:var(--text-primary);font-size:14px;font-weight:800; text-transform:uppercase;padding:8px 24px;border-radius:999px; display:inline-flex; align-items:center; box-shadow:0 4px 10px rgba(0,0,0,0.1); animation:bounceIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s backwards; margin-bottom: 24px; background: var(--bg-primary); }
-.success-card{ background-color:var(--bg-primary) !important; border-radius:20px;padding:24px 20px;width:100%;margin-bottom:20px; animation:bounceIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s backwards; }
+.success-card{ 
+    background-color: var(--glass-bg) !important; 
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius:20px; padding:24px 20px; width:100%; margin-bottom:20px; 
+    box-shadow: 0 0 20px 3px var(--dynamic-light), 0 10px 30px rgba(0,0,0,0.1);
+    animation:bounceIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s backwards; 
+}
 .success-name{font-size:26px;font-weight:800;color:var(--dynamic-primary);margin-bottom:8px}
 .success-msg {font-size:15px;font-weight:600;color:var(--text-secondary);line-height:1.5}
 
@@ -350,7 +378,7 @@ body:not(.theme-chandarana):not(.theme-carrefour) .network-indicator { backgroun
     <div class="welcome-tagline">your home of fresh juice</div>
     <div class="welcome-statement">drink well live fresh</div>
     
-    <div class="welcome-next-arrow" onclick="goToMenu()">
+    <div class="welcome-next-arrow" onclick="goToMenu(event)">
       <svg class="thick-arrow-icon" viewBox="0 0 24 24">
         <line x1="5" y1="12" x2="19" y2="12"></line>
         <polyline points="12 5 19 12 12 19"></polyline>
@@ -417,7 +445,7 @@ body:not(.theme-chandarana):not(.theme-carrefour) .network-indicator { backgroun
         <input type="tel" id="p-id" class="ui-input" placeholder="Enter ID to begin" required autocomplete="off" oninput="instantProfileStaffCheck(this.value)">
         <div id="p-staffMsg" class="msg" style="min-height:20px; margin-top:4px;"></div>
         
-        <!-- Hidden initially until 8 chars are entered -->
+        <!-- Hidden initially until entered -->
         <div id="p-step1-fields" style="display:none; animation: sectionFadeIn 0.4s ease forwards;">
           <label class="input-label" style="margin-top: 15px;">Full Name <span class="req-star">*</span></label>
           <input type="text" id="p-name" class="ui-input" required>
@@ -710,25 +738,43 @@ function startWelcomeCycler() {
   const colors = ["#10b981", "#3b82f6", "#8b5cf6"];
   
   let step = 0;
-  centerEl.style.transition = 'transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.8s ease';
+  let introSkipped = false;
+  let introTimeouts = [];
+
+  // Tapping anywhere skips the intro sequence immediately
+  document.getElementById('view-welcome').addEventListener('click', function(e) {
+      if (e.target.closest('.welcome-next-arrow')) return; // Ignore if they explicitly tapped the next arrow
+      if (!introSkipped && step < introPhrases.length) {
+          introSkipped = true;
+          introTimeouts.forEach(clearTimeout);
+          step = introPhrases.length;
+          centerEl.style.transition = 'none';
+          startNormalCycle();
+      }
+  });
+
+  centerEl.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease';
   centerEl.style.opacity = '0';
   centerEl.style.transform = 'scale(0.8)';
 
   function nextIntro() {
+      if (introSkipped) return;
       if (step < introPhrases.length) {
           centerEl.innerText = introPhrases[step];
           centerEl.style.color = colors[step];
           centerEl.style.transform = 'scale(0.8)';
           centerEl.style.opacity = '0';
           void centerEl.offsetWidth; 
+          centerEl.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease';
           centerEl.style.opacity = '1';
           centerEl.style.transform = 'scale(1.1)';
-          setTimeout(() => {
+          introTimeouts.push(setTimeout(() => {
+              if (introSkipped) return;
               centerEl.style.opacity = '0';
               centerEl.style.transform = 'scale(1.4)';
               step++;
-              setTimeout(nextIntro, 700);
-          }, 1200);
+              introTimeouts.push(setTimeout(nextIntro, 400));
+          }, 800));
       } else {
           startNormalCycle();
       }
@@ -739,7 +785,7 @@ function startWelcomeCycler() {
       const normalColors = ["#10b981", "#3b82f6", "#f59e0b", "#ec4899"];
       let i = 0;
       
-      centerEl.style.transition = 'opacity 0.6s ease, color 0.6s ease, transform 0.6s ease';
+      centerEl.style.transition = 'opacity 0.5s ease, color 0.5s ease, transform 0.5s ease';
       centerEl.innerText = phrases[i];
       centerEl.style.color = normalColors[i];
       centerEl.style.transform = 'scale(1)';
@@ -758,11 +804,11 @@ function startWelcomeCycler() {
               centerEl.style.color = normalColors[i];
               centerEl.style.transform = 'scale(1)';
               centerEl.style.opacity = '1';
-          }, 600); 
-      }, 3500);
+          }, 500); 
+      }, 2800);
   }
 
-  setTimeout(nextIntro, 300);
+  introTimeouts.push(setTimeout(nextIntro, 200));
 }
 
 function updateTime() {
@@ -802,7 +848,8 @@ function switchView(viewId) {
   });
 }
 
-function goToMenu() {
+function goToMenu(e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
   if (document.getElementById('view-orders').classList.contains('active') && activeStore) saveOrderState();
   if (document.getElementById('view-attendance').classList.contains('active')) stopCamera();
   
@@ -894,14 +941,13 @@ function instantProfileStaffCheck(val) {
   const fieldsEl = document.getElementById('p-step1-fields');
   const msgEl = document.getElementById('p-staffMsg');
 
-  // Collapse if backspaced below 8 chars
-  if (val.length < 8) { 
+  // Collapse if backspaced below 2 chars but allow verification of shorter valid IDs
+  if (val.length < 2) { 
     fieldsEl.style.display = 'none';
     msgEl.innerHTML = ''; 
     return; 
   }
   
-  // Exactly 8 or more -> verify
   let match = orderStaffCache.chandarana.find(s => s.id === val) || orderStaffCache.carrefour.find(s => s.id === val);
   
   if (match) {
@@ -1076,7 +1122,7 @@ function cancelBranchHold() { clearTimeout(branchHoldTimer); }
 function lockBranchSelect(isAttendanceVerified) {
   const sel = document.getElementById('o-branch'), overlay = document.getElementById('o-branch-overlay'), icon = document.getElementById('o-branch-lock-icon');
   sel.style.pointerEvents = 'none'; sel.style.appearance = 'none'; sel.style.color = 'var(--dynamic-primary)'; sel.style.fontWeight = '900';
-  if (isAttendanceVerified) { icon.style.display = 'none'; overlay.style.display = 'none'; sel.style.background = 'var(--bg-secondary)'; sel.style.borderColor = 'transparent';
+  if (isAttendanceVerified) { icon.style.display = 'none'; overlay.style.display = 'none'; sel.style.background = 'transparent'; sel.style.borderColor = 'transparent';
   } else { icon.style.display = 'inline'; icon.innerText = '🔒 Hold to edit'; overlay.style.display = 'block'; sel.style.background = 'var(--input-bg)'; sel.style.borderColor = 'var(--input-border)'; }
 }
 
@@ -1249,8 +1295,8 @@ function downloadReceipt(btn) {
       document.body.appendChild(tempDiv);
       tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px';
       
-      // Fast canvas execution
-      window.html2canvas(tempDiv, { scale: 1.2, useCORS: true, logging: false }).then(canvas => {
+      // Fast canvas execution via natively imported html2canvas
+      window.html2canvas(tempDiv, { scale: 1.5, useCORS: true, logging: false }).then(canvas => {
           const a = document.createElement('a');
           a.href = canvas.toDataURL('image/jpeg', 0.85);
           a.download = 'Order_' + document.getElementById('o-id').value + '_' + Date.now() + '.jpg';
@@ -1262,6 +1308,10 @@ function downloadReceipt(btn) {
           btn.innerHTML = 'Error'; setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 1500); 
           document.body.removeChild(tempDiv);
       });
+  } else {
+      btn.innerHTML = 'Error';
+      setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 1500); 
+      alert("Save functionality is not loaded yet. Check your connection.");
   }
 }
 
