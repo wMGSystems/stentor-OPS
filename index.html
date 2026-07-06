@@ -368,6 +368,41 @@ body:not(.theme-chandarana):not(.theme-carrefour) .network-indicator { backgroun
 .btn-modal:active { transform: scale(0.95); }
 .btn-edit { background: #6b7280; } .btn-save { background: #3b82f6; } .btn-confirm { background: #10b981; }
 
+.profile-summary-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(156, 163, 175, 0.15);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.profile-summary-item:last-child {
+  border-bottom: none;
+}
+.profile-summary-item:active {
+  background-color: var(--dynamic-light);
+  border-radius: 8px;
+}
+.profile-summary-item strong {
+  color: var(--dynamic-primary);
+  font-size: 11px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 900;
+}
+.profile-summary-item span {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+.edit-icon {
+  font-size: 14px;
+  opacity: 0.6;
+}
+
 #photoZoomContainer { display:none; position:fixed; inset:0; z-index:20000; pointer-events:none; }
 #photoZoomBg { position: absolute; inset:0; }
 #zoomedImage { position: absolute; object-fit: cover; box-shadow: 0 0 0 4px var(--dynamic-primary), 0 25px 60px rgba(0,0,0,0.6); z-index: 20001; cursor: zoom-out; }
@@ -459,7 +494,7 @@ body:not(.theme-chandarana):not(.theme-carrefour) .network-indicator { backgroun
   <div class="app-container scrollable solid-panel">
     <h2 style="font-weight:900; color:var(--text-primary); text-align:center; font-size: 18px; margin-bottom: 20px;">PROFILE REGISTRATION</h2>
     
-    <form id="profileForm" onsubmit="submitProfile(event)">
+    <form id="profileForm" onsubmit="reviewProfile(event)">
       <!-- STEP 1 -->
       <div class="section-card" id="p-step1">
         <label class="input-label">ID Number <span class="req-star">*</span></label>
@@ -518,7 +553,7 @@ body:not(.theme-chandarana):not(.theme-carrefour) .network-indicator { backgroun
 
         <div style="display:flex; gap:10px; margin-top:20px;">
           <button type="button" class="btn-secondary" onclick="prevProfileStep(2)" style="margin-top:0;">← Back</button>
-          <button type="submit" class="btn-primary solid" id="profileSubmitBtn" style="margin-top:0;">Save Profile</button>
+          <button type="submit" class="btn-primary solid" id="profileReviewBtn" style="margin-top:0;">Review Details</button>
         </div>
       </div>
     </form>
@@ -691,6 +726,18 @@ body:not(.theme-chandarana):not(.theme-carrefour) .network-indicator { backgroun
       <button class="btn-modal btn-edit" onclick="closeConfirmModal()">Edit</button>
       <button class="btn-modal btn-save" id="saveReceiptBtn" onclick="downloadReceipt(this)">Save</button>
       <button class="btn-modal btn-confirm" id="confirmSendBtn" onclick="confirmAndSendOrder()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="profileConfirmModal" class="modal-overlay">
+  <div class="modal-box">
+    <h3 style="margin:0 0 10px; font-size:20px; font-weight:900; text-transform:uppercase; color: var(--dynamic-primary);">Review Profile</h3>
+    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; font-weight: 700; line-height: 1.4;">Tap any detail to jump back and edit it.</p>
+    <div id="profileSummaryDetails" class="receipt-content" style="padding: 6px; max-height: 50vh;"></div>
+    <div class="modal-actions-row">
+      <button class="btn-modal btn-edit" onclick="document.getElementById('profileConfirmModal').style.display='none'">Back</button>
+      <button class="btn-modal btn-confirm" id="confirmProfileSendBtn" onclick="confirmAndSendProfile()">Submit</button>
     </div>
   </div>
 </div>
@@ -1041,7 +1088,9 @@ function prevProfileStep(n) {
     prevStep.style.animation = 'sectionFadeIn 0.4s ease forwards';
 }
 
-async function submitProfile(e) {
+let pendingProfilePayload = null;
+
+function reviewProfile(e) {
   e.preventDefault();
   const acc = document.getElementById('p-acc').value;
   const accConfirm = document.getElementById('p-acc-confirm').value;
@@ -1053,7 +1102,7 @@ async function submitProfile(e) {
   }
   document.getElementById('p-accMsg').innerHTML = '';
   
-  const payload = {
+  pendingProfilePayload = {
     id: document.getElementById('p-id').value,
     name: document.getElementById('p-name').value,
     phone: document.getElementById('p-phone').value,
@@ -1070,12 +1119,69 @@ async function submitProfile(e) {
     kra: document.getElementById('p-kra').value,
     empDate: document.getElementById('p-emp').value
   };
+
+  const p = pendingProfilePayload;
+
+  // Helper generator to format rows that jump to specific steps when tapped
+  const makeRow = (label, value, step) => `
+    <div class="profile-summary-item" onclick="editProfileStep(${step})">
+      <div>
+        <strong>${label}</strong>
+        <span>${value || '-'}</span>
+      </div>
+      <div class="edit-icon">✏️</div>
+    </div>
+  `;
+
+  let html = '';
+  // Step 1 mappings
+  html += makeRow('ID Number', p.id, 1);
+  html += makeRow('Full Name', p.name, 1);
+  html += makeRow('Phone', p.phone, 1);
+  html += makeRow('Default Branch', p.branch, 1);
   
-  const btn = document.getElementById('profileSubmitBtn');
+  // Step 2 mappings
+  html += makeRow('Email', p.email, 2);
+  html += makeRow('Alt Contact', p.altContact, 2);
+  html += makeRow('Physical Address', p.address, 2);
+  html += makeRow('Next of Kin', p.nok, 2);
+  html += makeRow('NOK Contact', p.nokContact, 2);
+  
+  // Step 3 mappings
+  html += makeRow('Bank Name', p.bank, 3);
+  html += makeRow('Account Number', p.acc, 3);
+  html += makeRow('SHA Number', p.sha, 3);
+  html += makeRow('NSSF Number', p.nssf, 3);
+  html += makeRow('KRA PIN', p.kra, 3);
+  html += makeRow('Emp. Date', p.empDate, 3);
+
+  document.getElementById('profileSummaryDetails').innerHTML = html;
+  document.getElementById('profileConfirmModal').style.display = 'flex';
+}
+
+function editProfileStep(targetStepNum) {
+  // Hide the modal
+  document.getElementById('profileConfirmModal').style.display = 'none';
+  
+  // Hide all steps
+  document.getElementById('p-step1').style.display = 'none';
+  document.getElementById('p-step2').style.display = 'none';
+  document.getElementById('p-step3').style.display = 'none';
+  
+  // Display the target step tapped by the user
+  const targetStep = document.getElementById('p-step' + targetStepNum);
+  targetStep.style.display = 'block';
+  targetStep.style.animation = 'sectionFadeIn 0.4s ease forwards';
+}
+
+async function confirmAndSendProfile() {
+  const btn = document.getElementById('confirmProfileSendBtn');
+  const payload = pendingProfilePayload;
   
   // Smart Skip logic if nothing changed
   const prevStr = Storage.get('profile_saved_' + payload.id);
   if (prevStr && prevStr === JSON.stringify(payload)) {
+    document.getElementById('profileConfirmModal').style.display = 'none';
     document.getElementById('profileForm').style.display = 'none';
     document.getElementById('profileSuccess').style.display = 'block';
     document.getElementById('profileSuccessText').innerText = "You already updated your profile.";
@@ -1089,13 +1195,14 @@ async function submitProfile(e) {
     if (!res.ok) throw new Error(res.error);
     
     Storage.set('profile_saved_' + payload.id, JSON.stringify(payload));
+    document.getElementById('profileConfirmModal').style.display = 'none';
     document.getElementById('profileForm').style.display = 'none';
     document.getElementById('profileSuccess').style.display = 'block';
     document.getElementById('profileSuccessText').innerText = "Profile Saved!";
   } catch(err) {
     alert("Error saving profile: " + err.message);
   }
-  btn.disabled = false; btn.innerText = 'Save Profile';
+  btn.disabled = false; btn.innerText = 'Submit';
 }
 
 // ==========================================
