@@ -8,7 +8,9 @@
 <meta name="theme-color" id="theme-color-meta" content="#ffffff">
 <title>Stentor Operations</title>
 
+<!-- Fixed library to properly allow rendering of the Order Receipts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <script>
   function applyInitialTheme() {
     try {
@@ -27,10 +29,15 @@
   color-scheme: light dark;
   --bg-primary: #ffffff; 
   --bg-secondary: #f7f9fa;
+  
+  /* Deep Background Gradients for Shops */
   --bg-chan-grad: linear-gradient(135deg, #10b981 0%, #047857 100%);
   --bg-carr-grad: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  
+  /* Glass and Glow properties */
   --glass-bg: rgba(255, 255, 255, 0.88);
   --glass-border: rgba(255, 255, 255, 0.6);
+
   --text-primary: #111827; 
   --text-secondary: #4b5563; 
   --text-tertiary: #9ca3af;
@@ -40,12 +47,14 @@
   --button-secondary-bg: #eff6ff;
   --error-color: #ef4444; --warning-bg: #fef2f2; --warning-border: #fecaca; --warning-text: #b91c1c;
   --label-text: #6b7280;
+  
   --theme-chan: #10b981; 
   --theme-carr: #3b82f6; 
   --theme-chan-light: rgba(16, 185, 129, 0.15);
   --theme-carr-light: rgba(59, 130, 246, 0.15);
   --modal-overlay: rgba(0,0,0,0.65); 
-  --dynamic-primary: #0d9488;
+  
+  --dynamic-primary: #0d9488; /* Teal blend for neutral state */
   --dynamic-light: rgba(13, 148, 136, 0.15);
 }
 
@@ -54,10 +63,14 @@
     color-scheme: dark;
     --bg-primary: #1f2937; 
     --bg-secondary: #111827;
+    
+    /* Deep Background Gradients for Shops (Dark Mode) */
     --bg-chan-grad: linear-gradient(135deg, #059669 0%, #064e3b 100%);
     --bg-carr-grad: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%);
+
     --glass-bg: rgba(31, 41, 55, 0.88);
     --glass-border: rgba(75, 85, 99, 0.6);
+
     --text-primary: #f9fafb; 
     --text-secondary: #d1d5db; 
     --text-tertiary: #9ca3af;
@@ -67,6 +80,7 @@
     --button-secondary-bg: #1e3a8a;
     --error-color: #f87171; --warning-bg: #450a0a; --warning-border: #7f1d1d; --warning-text: #fca5a5;
     --label-text: #9ca3af;
+    
     --theme-chan: #059669; 
     --theme-carr: #2563eb; 
     --theme-chan-light: rgba(5, 150, 105, 0.25);
@@ -75,80 +89,323 @@
   }
 }
 
-body.theme-chandarana { --dynamic-primary: var(--theme-chan); --dynamic-light: var(--theme-chan-light); }
-body.theme-carrefour { --dynamic-primary: var(--theme-carr); --dynamic-light: var(--theme-carr-light); }
+body.theme-chandarana {
+  --dynamic-primary: var(--theme-chan);
+  --dynamic-light: var(--theme-chan-light);
+}
+
+body.theme-carrefour {
+  --dynamic-primary: var(--theme-carr);
+  --dynamic-light: var(--theme-carr-light);
+}
 
 ::-webkit-scrollbar { display: none; }
 * { -ms-overflow-style: none; scrollbar-width: none; box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; }
-body { font-family: 'Nunito', sans-serif; color:var(--text-primary); background: transparent; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:env(safe-area-inset-top, 16px) 12px env(safe-area-inset-bottom, 16px); overflow-y:auto; -webkit-overflow-scrolling:touch; }
+
+body {
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+  color:var(--text-primary); background: transparent;
+  min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; 
+  padding:env(safe-area-inset-top, 16px) 12px env(safe-area-inset-bottom, 16px); 
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+}
 input, textarea, select { -webkit-user-select: auto; user-select: auto; font-family: inherit;}
 .view-section, .btn-primary, .btn-secondary, .pill-btn, .hanging-sign, .chip-span, .order-group-title { -webkit-user-select: none; user-select: none; }
 
-.bg-layer { position: fixed; inset: 0; z-index: -10; opacity: 0; transition: opacity 0.6s ease; pointer-events: none; }
-.bg-layer.previous { z-index: -9; opacity: 1; transition: none; }
-.bg-layer.active { z-index: -8; opacity: 1; }
-.layer-welcome { background: var(--bg-secondary); } .layer-hub { background: var(--bg-secondary); } .layer-chandarana { background: var(--bg-chan-grad); } .layer-carrefour { background: var(--bg-carr-grad); }
+/* SEAMLESS BACKGROUND LAYERS CROSS-FADING */
+.bg-layer { 
+  position: fixed; inset: 0; z-index: -10; 
+  opacity: 0; transition: opacity 0.6s ease; 
+  pointer-events: none; 
+}
+.bg-layer.previous {
+  z-index: -9; 
+  opacity: 1; 
+  transition: none; /* Stay visible behind the new fading layer */
+}
+.bg-layer.active { 
+  z-index: -8; 
+  opacity: 1; 
+}
 
-.ui-input, .ui-select, .pill-slider, .pill-btn, .success-tick, .success-tick-circle, .success-tick-check, .chip-span, .section-card, .order-group, .solid-panel, .success-card, .success-badge, #o-id, .order-group-title::after, .chain::before, .network-indicator, .hanging-sign { transition: background-color 0.6s ease, border-color 0.6s ease, color 0.6s ease, box-shadow 0.6s ease, opacity 0.4s ease, transform 0.4s ease; }
-.btn-primary, .btn-secondary, .inline-back { transition: background-color 0.6s ease, border-color 0.6s ease, color 0.6s ease, box-shadow 0.6s ease, transform 0.15s ease, opacity 0.2s ease; }
+.layer-welcome { background: var(--bg-secondary); }
+.layer-hub { background: var(--bg-secondary); }
+.layer-chandarana { background: var(--bg-chan-grad); }
+.layer-carrefour { background: var(--bg-carr-grad); }
 
-/* Increased Light Mode Doodles */
-.doodle-bg { position: fixed; inset: -50vh -50vw; z-index: -7; pointer-events: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><g stroke="%23000" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M 40 40 A 15 15 0 0 1 70 40 A 15 15 0 0 1 40 40 Z"/><path d="M 55 25 L 55 15 M 55 15 Q 65 15 70 20"/><circle cx="150" cy="60" r="20"/><path d="M 130 60 L 170 60 M 150 40 L 150 80"/><path d="M 50 150 Q 70 120 90 150 Q 70 180 50 150 Z"/><circle cx="160" cy="150" r="4" fill="%23000"/><circle cx="140" cy="160" r="3" fill="%23000"/></g></svg>'); background-size: 160px 160px; background-repeat: repeat; opacity: 0.16; }
+/* SMOOTH COLOR TRANSITIONS ON ALL UI ELEMENTS */
+.ui-input, .ui-select, .pill-slider, .pill-btn, .success-tick, .success-tick-circle, .success-tick-check, .chip-span, .section-card, .order-group, .solid-panel, .success-card, .success-badge, #o-id, .order-group-title::after, .chain::before, .network-indicator, .hanging-sign {
+  transition: background-color 0.6s ease, border-color 0.6s ease, color 0.6s ease, box-shadow 0.6s ease, opacity 0.4s ease, transform 0.4s ease;
+}
+.btn-primary, .btn-secondary, .inline-back {
+  transition: background-color 0.6s ease, border-color 0.6s ease, color 0.6s ease, box-shadow 0.6s ease, transform 0.15s ease, opacity 0.2s ease;
+}
+
+/* FIXED DOODLE BACKGROUND */
+.doodle-bg {
+  position: fixed; inset: -50vh -50vw; z-index: -7; pointer-events: none;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><g stroke="%23000" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M 40 40 A 15 15 0 0 1 70 40 A 15 15 0 0 1 40 40 Z"/><path d="M 55 25 L 55 15 M 55 15 Q 65 15 70 20"/><circle cx="150" cy="60" r="20"/><path d="M 130 60 L 170 60 M 150 40 L 150 80"/><path d="M 50 150 Q 70 120 90 150 Q 70 180 50 150 Z"/><circle cx="160" cy="150" r="4" fill="%23000"/><circle cx="140" cy="160" r="3" fill="%23000"/></g></svg>');
+  background-size: 160px 160px; background-repeat: repeat; opacity: 0.08;
+}
 @media (prefers-color-scheme: dark) { .doodle-bg { filter: invert(1); opacity: 0.08; } }
 
+/* GLOBAL UI & GLASSMORPHISM */
 .view-section { display: none; width: 100%; max-width: 440px; flex-direction: column; align-items: center; position: relative; opacity: 0; transform: translateY(15px); z-index: 10; }
 .view-section.active { display: flex; opacity: 1; animation: sectionFadeIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 @keyframes sectionFadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: none; } }
 @keyframes bounceIn{ 0%{transform:scale(0.9);opacity:0} 60%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
 @keyframes spin{ to { transform: rotate(360deg); } }
 
-.solid-panel { background-color: var(--glass-bg) !important; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative; z-index: 20; }
+.solid-panel { 
+    background-color: var(--glass-bg) !important; 
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-radius: 24px; 
+    border: 1px solid var(--glass-border); 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08); /* Clean, soft neutral shadow */
+    position: relative; 
+    z-index: 20; 
+}
+
+/* WELCOME SCREEN */
 .welcome-section { display: none; width: 100%; max-width: 100% !important; height: 100vh; height: 100dvh; flex-direction: column; justify-content: space-between; padding: 10vh 20px 10vh 20px; box-sizing: border-box; position: absolute; inset: 0; z-index: 50; touch-action: none; overflow: hidden; cursor: pointer; }
 .welcome-section.active { display: flex; opacity: 1; }
-.welcome-top, .welcome-bottom { opacity: 0; transition: opacity 1.2s ease; } .welcome-top.show, .welcome-bottom.show { opacity: 1; }
-.welcome-top { position: relative; z-index: 2; width: 100%; text-align: left; } .welcome-title { font-size: clamp(60px, 15vw, 90px); font-weight: 900; line-height: 0.95; color: var(--text-primary); margin: 0; letter-spacing: -2px; }
-.welcome-cycler { flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 20px; z-index: 2;} #welcomeMessage { font-size: 32px; font-weight: 900; text-align: center; opacity: 0; line-height: 1.3; text-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-.welcome-bottom { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-end; text-align: right; width: 100%; gap: 10px; } .welcome-date { color: var(--theme-chan); font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: -4px;} .welcome-time { color: var(--text-secondary); font-size: 14px; font-weight: 700; margin-bottom: 6px; } .welcome-tagline { color: var(--text-secondary); font-size: 18px; font-weight: 700; margin-bottom: 2px; } .welcome-statement { color: var(--theme-chan); font-size: 20px; font-weight: 900; text-transform: uppercase; margin-bottom: 12px;} .welcome-next-arrow { color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 10px; transition: transform 0.2s; -webkit-tap-highlight-color: transparent; } .welcome-next-arrow:active { transform: scale(0.92); } .thick-arrow-icon { width: 44px; height: 44px; stroke: currentColor; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+.welcome-top, .welcome-bottom { opacity: 0; transition: opacity 1.2s ease; }
+.welcome-top.show, .welcome-bottom.show { opacity: 1; }
+.welcome-top { position: relative; z-index: 2; width: 100%; text-align: left; }
+.welcome-title { font-size: clamp(60px, 15vw, 90px); font-weight: 900; line-height: 0.95; color: var(--text-primary); margin: 0; letter-spacing: -2px; }
+.welcome-cycler { flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 20px; z-index: 2;}
+#welcomeMessage { font-size: 32px; font-weight: 900; text-align: center; opacity: 0; line-height: 1.3; text-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.welcome-bottom { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-end; text-align: right; width: 100%; gap: 10px; }
+.welcome-date { color: var(--theme-chan); font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: -4px;}
+.welcome-time { color: var(--text-secondary); font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.welcome-tagline { color: var(--text-secondary); font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+.welcome-statement { color: var(--theme-chan); font-size: 20px; font-weight: 900; text-transform: uppercase; margin-bottom: 12px;}
+.welcome-next-arrow { color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 10px; transition: transform 0.2s; -webkit-tap-highlight-color: transparent; }
+.welcome-next-arrow:active { transform: scale(0.92); }
+.thick-arrow-icon { width: 44px; height: 44px; stroke: currentColor; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
 
-.menu-container { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 440px; z-index: 10; margin-top: -5vh; position:relative; } .hub-logo { font-size: 36px; font-weight: 900; color: var(--text-primary); margin-bottom: 6px; text-shadow: 0 2px 8px rgba(0,0,0,0.05); } .menu-subtitle { color: var(--text-secondary); font-weight: 700; font-size: 16px; margin-bottom: 40px; }
-.thought-bubble-container { position: absolute; top: -60px; left: 16px; cursor: pointer; z-index: 100; -webkit-tap-highlight-color: transparent; animation: floatContainer 3.5s ease-in-out infinite; } .thought-bubble-container:active .bubble-large { transform: scale(0.92) translateY(-4px); transition: 0.1s; } .bubble-large { background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6); border-radius: 50px; display: flex; align-items: center; gap: 6px; padding: 10px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); color: #fff; font-weight: 800; font-size: 15px; position: relative; z-index: 3; } .bubble-small, .bubble-medium { position: absolute; background: linear-gradient(135deg, #10b981, #3b82f6); border-radius: 50%; z-index: 2; opacity: 0; animation: floatSmallBubbles 2.5s infinite; } .bubble-medium { width: 14px; height: 14px; bottom: -12px; left: 14px; animation-delay: 0.3s; } .bubble-small { width: 8px; height: 8px; bottom: -24px; left: 4px; animation-delay: 0s; }
-@keyframes floatContainer { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } } @keyframes floatSmallBubbles { 0% { transform: scale(0) translateY(0); opacity: 0; } 30% { transform: scale(1) translateY(0); opacity: 1; } 70% { transform: scale(1) translateY(-3px); opacity: 1; } 100% { transform: scale(0) translateY(-8px); opacity: 0; } }
+/* MODULE HUB SELECTION MENU */
+.menu-container { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: 440px; z-index: 10; margin-top: -5vh; position:relative; }
+.hub-logo { font-size: 36px; font-weight: 900; color: var(--text-primary); margin-bottom: 6px; text-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.menu-subtitle { color: var(--text-secondary); font-weight: 700; font-size: 16px; margin-bottom: 40px; }
 
-.hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; padding: 0 16px; } .hub-card { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; opacity: 0; transform: translateY(40px); } .hub-card:active { transform: scale(0.95) !important; transition: 0.2s; } #view-menu.active .hub-card:nth-child(1) { animation: smoothUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: 0.1s; } #view-menu.active .hub-card:nth-child(2) { animation: smoothUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: 0.2s; } @keyframes smoothUp { 0% { opacity: 0; transform: translateY(40px); } 100% { opacity: 1; transform: translateY(0); } }
-.hc-icon-box { width: 76px; height: 76px; border-radius: 22px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); } .hc-alarm { background: linear-gradient(135deg, #10b981, #047857); } .hc-cart { background: linear-gradient(135deg, #3b82f6, #1d4ed8); } .hc-text { font-size: 17px; font-weight: 900; color: var(--text-primary); text-transform: uppercase; text-align: center;}
+/* Animated Profile Bubble */
+.thought-bubble-container { position: absolute; top: -60px; left: 16px; cursor: pointer; z-index: 100; -webkit-tap-highlight-color: transparent; animation: floatContainer 3.5s ease-in-out infinite; }
+.thought-bubble-container:active .bubble-large { transform: scale(0.92) translateY(-4px); transition: 0.1s; }
+.bubble-large { background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6); border-radius: 50px; display: flex; align-items: center; gap: 6px; padding: 10px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); color: #fff; font-weight: 800; font-size: 15px; position: relative; z-index: 3; }
+.bubble-small, .bubble-medium { position: absolute; background: linear-gradient(135deg, #10b981, #3b82f6); border-radius: 50%; z-index: 2; opacity: 0; animation: floatSmallBubbles 2.5s infinite; }
+.bubble-medium { width: 14px; height: 14px; bottom: -12px; left: 14px; animation-delay: 0.3s; }
+.bubble-small { width: 8px; height: 8px; bottom: -24px; left: 4px; animation-delay: 0s; }
 
-.inline-back-wrapper { width: 100%; max-width: 440px; display: flex; justify-content: flex-start; padding: 0 16px; margin-top: 16px; z-index: 20; } .inline-back { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; color: var(--text-secondary); padding: 14px 26px; border-radius: 50px; cursor: pointer; -webkit-tap-highlight-color: transparent;} .inline-back:active { transform: scale(0.92); }
-.app-container { width: 100%; padding:24px 22px; display:flex; flex-direction:column; justify-content:center; } .app-container.scrollable { max-height: 85vh; overflow-y: auto; overflow-x: hidden; padding-bottom: 30px; justify-content:flex-start; }
+@keyframes floatContainer { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes floatSmallBubbles { 0% { transform: scale(0) translateY(0); opacity: 0; } 30% { transform: scale(1) translateY(0); opacity: 1; } 70% { transform: scale(1) translateY(-3px); opacity: 1; } 100% { transform: scale(0) translateY(-8px); opacity: 0; } }
 
-.top-bar { display:flex; justify-content:center; margin-bottom:20px; width: 100%; position: relative; z-index: 5;} .terminal-pill-wrapper { position:relative; display:inline-flex; background:var(--input-bg); border:1px solid var(--border-color); border-radius:50px; padding:4px; height:46px; align-items:center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); } .pill-slider { position:absolute; top:4px; bottom:4px; left:4px; border-radius:50px; background:var(--dynamic-primary); box-shadow:0 2px 6px rgba(0,0,0,0.15); z-index:1; } .pill-btn { position:relative; z-index:2; background:transparent; border:none; padding:0 20px; height:100%; font-size:14px; font-weight:800; color:var(--text-secondary); cursor:pointer; outline:none; } .pill-btn.active { color:#fff; }
+.hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; padding: 0 16px; }
+.hub-card { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; opacity: 0; transform: translateY(40px); }
+.hub-card:active { transform: scale(0.95) !important; transition: 0.2s; }
+#view-menu.active .hub-card:nth-child(1) { animation: smoothUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: 0.1s; }
+#view-menu.active .hub-card:nth-child(2) { animation: smoothUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: 0.2s; }
+@keyframes smoothUp { 0% { opacity: 0; transform: translateY(40px); } 100% { opacity: 1; transform: translateY(0); } }
 
-.input-label { font-weight:700; font-size:12px; display:block; margin-bottom:8px; color:var(--label-text); text-transform:uppercase; letter-spacing:0.5px;} .req-star { color: var(--error-color); font-weight: 900; }
-.ui-input, .ui-select { width:100%; height:52px; padding:0 16px; border-radius:14px; border:1.5px solid var(--input-border); font-size:16px; font-weight:700; background:var(--input-bg); color:var(--text-primary); outline:none; -webkit-appearance:none; position:relative; z-index:10; cursor:pointer;} .ui-input:focus, .ui-select:focus { border-color:var(--dynamic-primary); background:var(--bg-primary); box-shadow:0 0 0 3px var(--dynamic-light); } .ui-input:read-only { background: var(--bg-secondary); color: var(--dynamic-primary); border-color: transparent; }
-.btn-primary { width:100%; height:52px; border-radius:14px; border:none; font-size:15px; font-weight:800; background:var(--button-secondary-bg); color:var(--dynamic-primary); cursor:pointer; display:flex; align-items:center; justify-content:center;} .btn-primary:active { transform: scale(0.97); } .btn-primary:disabled { opacity: 0.5; pointer-events: none; } .btn-primary.solid { background:var(--dynamic-primary); color:#fff; margin-top:8px;} .btn-secondary { width:100%; height:52px; border-radius:14px; border: 2px solid var(--border-color); font-size:15px; font-weight:800; background:var(--input-bg); color:var(--text-primary); cursor:pointer; display:flex; align-items:center; justify-content:center; margin-top:8px;} .btn-secondary:active { transform: scale(0.97); } .btn-spinner { border: 2px solid rgba(0,0,0,0.1); border-top-color: currentColor; border-radius: 50%; animation: spin 0.6s linear infinite; width:16px; height:16px; margin-right:8px;}
+.hc-icon-box { width: 76px; height: 76px; border-radius: 22px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+.hc-alarm { background: linear-gradient(135deg, #10b981, #047857); }
+.hc-cart { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.hc-text { font-size: 17px; font-weight: 900; color: var(--text-primary); text-transform: uppercase; text-align: center;}
 
-.section-card, .order-group { background-color: var(--glass-bg) !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 16px; margin-bottom: 15px; overflow: hidden; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
-.section-card::before, .order-group::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4.5px; background-color: var(--dynamic-primary); z-index: 5; transition: background-color 0.6s ease; }
-body:not(.theme-chandarana):not(.theme-carrefour) .section-card::before, body:not(.theme-chandarana):not(.theme-carrefour) .order-group::before { background: linear-gradient(to bottom, var(--theme-chan), var(--theme-carr)); }
-.section-card { padding: 14px; } #o-id { color: var(--dynamic-primary); font-weight: 900; font-size: 18px; } #o-id::placeholder { color: var(--text-tertiary); opacity: 0.8; font-weight: 700; } .locked-form { opacity: 0.4; pointer-events: none; transition: opacity 0.4s ease; } .locked-form.unlocked { opacity: 1; pointer-events: auto; } .order-group-title { padding: 14px 16px; font-size: 14px; font-weight: 900; color: var(--text-primary); cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: transparent; outline: none; list-style: none; } .order-group-title::-webkit-details-marker { display: none; } .order-group-title::after { content: '+'; font-size: 18px; color: var(--dynamic-primary); font-weight: 400;} .order-group[open] .order-group-title::after { content: '-'; transform: rotate(180deg); } .order-group-content { padding: 14px; border-top: 1px solid rgba(156, 163, 175, 0.15); }
-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; } th, td { padding: 8px 4px; border-bottom: 1px solid rgba(156, 163, 175, 0.15); border-right: 1px solid rgba(156, 163, 175, 0.15); } th { background: transparent; font-weight: 900; font-size: 12px; width: 35%; text-transform: uppercase;} th:first-child, td.flavor-name { position: sticky; left: 0; background: var(--glass-bg); z-index: 10; text-align: left; padding-left: 8px; font-weight:800; font-size:11px;} .square-input { width: 50px; height: 34px; border-radius: 10px; margin: 0 auto; background: var(--input-bg); border: 2px solid var(--input-border); color: var(--text-tertiary); font-weight: 900; display: flex; align-items: center; justify-content: center; } .square-input.has-value { background: var(--dynamic-primary); color: #fff; border-color: var(--dynamic-primary); } .chip-group { display: flex; flex-wrap: wrap; gap: 8px; } .chip-label input { display: none; } .chip-span { display: inline-flex; background: var(--input-bg); border: 1px solid var(--input-border); padding: 10px 16px; border-radius: 50px; font-size: 13px; font-weight: 800; color: var(--text-secondary); } .chip-label input:checked + .chip-span { background: var(--dynamic-primary); color: #fff; border-color: var(--dynamic-primary); transform: translateY(-2px); }
+/* BACK BUTTONS */
+.inline-back-wrapper { width: 100%; max-width: 440px; display: flex; justify-content: flex-start; padding: 0 16px; margin-top: 16px; z-index: 20; }
+.inline-back { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; color: var(--text-secondary); padding: 14px 26px; border-radius: 50px; cursor: pointer; -webkit-tap-highlight-color: transparent;}
+.inline-back:active { transform: scale(0.92); }
 
-.app-wrapper { position: relative; width: 100%; max-width: 440px; display: flex; flex-direction:column; align-items: center; justify-content: center; padding-top:20px; z-index: 10;} .hanging-sign-wrapper { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: -5px; perspective: 800px; z-index: 30; width: 240px; pointer-events: none; } .chain { position: absolute; top: -30px; width: 5px; height: 34px; background: linear-gradient(to right, #9ca3af, #f3f4f6, #9ca3af); border-radius: 3px; box-shadow: inset 0 0 3px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2); z-index: 1; pointer-events: none; } .chain::before { content: ''; position: absolute; top: -6px; left: -3.5px; width: 12px; height: 12px; border-radius: 50%; background-color: var(--dynamic-primary); border: 3.5px solid #d1d5db; box-shadow: 0 8px 12px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.4), inset 0 2px 4px rgba(0,0,0,0.7); box-sizing: border-box; pointer-events: none; } body:not(.theme-chandarana):not(.theme-carrefour) .chain::before { background-color: #0d9488; }
-.left-chain { left: 40px; } .right-chain { right: 40px; } .hanging-sign { background-color: var(--dynamic-primary); color: #ffffff; text-shadow: 0 2px 5px rgba(0,0,0,0.3); padding: 12px 10px; border-radius: 12px; font-weight: 900; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; text-align: center; width: 100%; display: block; box-sizing: border-box; box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 -3px 0 rgba(0,0,0,0.15); transform-origin: top center; position: relative; z-index: 2; } body:not(.theme-chandarana):not(.theme-carrefour) .hanging-sign { background: linear-gradient(135deg, var(--theme-chan), var(--theme-carr)); }
-@keyframes swing { 0% { transform: rotateX(0deg) rotateZ(0deg); } 20% { transform: rotateX(25deg) rotateZ(-3deg); } 40% { transform: rotateX(-15deg) rotateZ(2deg); } 60% { transform: rotateX(8deg) rotateZ(-1deg); } 80% { transform: rotateX(-3deg) rotateZ(0deg); } 100% { transform: rotateX(0deg) rotateZ(0deg); } } .hanging-sign.nudge { animation: swing 0.7s cubic-bezier(0.25, 1, 0.5, 1); }
-.network-indicator{ position:absolute;top:18px;left:18px;width:8px;height:8px;border-radius:50%; background-color:var(--dynamic-primary);opacity:0.9; box-shadow: 0 0 6px var(--dynamic-primary); } body:not(.theme-chandarana):not(.theme-carrefour) .network-indicator { background-color: #0d9488; box-shadow: 0 0 6px #0d9488; } .network-indicator.offline{background-color:var(--text-tertiary);opacity:0.4; box-shadow:none;}
-.step-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px 16px; position: relative; z-index: 5;} .step { opacity:0.3; pointer-events:none; transition: opacity 0.4s ease; position: relative; z-index: 10;} .step.activeStep { opacity:1; pointer-events:auto; animation:bounceIn 0.45s ease; }
+/* SHARED APP CONTAINER */
+.app-container { width: 100%; padding:24px 22px; display:flex; flex-direction:column; justify-content:center; }
+.app-container.scrollable { max-height: 85vh; overflow-y: auto; overflow-x: hidden; padding-bottom: 30px; justify-content:flex-start; }
 
-.msg{ font-size:13px;font-weight:600;margin-top:8px; min-height:42px; align-items:flex-start; line-height:1.4; color:var(--text-tertiary);display:flex; transition: opacity 0.3s ease, color 0.3s ease; opacity: 1; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,0.1); } .msg.success{color:var(--dynamic-primary);font-size:14px} .msg.error{color:var(--error-color)} .msg .dot{ display:inline-flex;justify-content:center;align-items:center; width:16px;height:16px;background:var(--dynamic-primary);border-radius:50%; margin-right:8px;flex-shrink:0;position:relative; margin-top: 2px; } .msg .dot::after{ content:'';position:absolute;top:45%;left:50%; width:3.5px;height:7px; border-right:2px solid #fff;border-bottom:2px solid #fff; transform:translate(-50%,-50%) rotate(45deg); }
+/* TERMINAL PILLS */
+.top-bar { display:flex; justify-content:center; margin-bottom:20px; width: 100%; position: relative; z-index: 5;}
+.terminal-pill-wrapper { position:relative; display:inline-flex; background:var(--input-bg); border:1px solid var(--border-color); border-radius:50px; padding:4px; height:46px; align-items:center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+.pill-slider { position:absolute; top:4px; bottom:4px; left:4px; border-radius:50px; background:var(--dynamic-primary); box-shadow:0 2px 6px rgba(0,0,0,0.15); z-index:1; }
+.pill-btn { position:relative; z-index:2; background:transparent; border:none; padding:0 20px; height:100%; font-size:14px; font-weight:800; color:var(--text-secondary); cursor:pointer; outline:none; }
+.pill-btn.active { color:#fff; }
 
-.glass-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; height: 100dvh; background: rgba(10, 10, 10, 0.6); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); margin: 0; padding: 0; z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; transform: translateZ(0); } .glass-overlay.show { opacity: 1; pointer-events: auto; } #videoContainerWrapper{ position:fixed; top: 50%; left: 50%; width: 85%; max-width: 380px; aspect-ratio: 3 / 4; border-radius: 28px; overflow: hidden; z-index: 10001; background-color: #000; box-shadow: 0 25px 60px rgba(0,0,0,0.6); transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.25, 1, 0.4, 1); transform: translate(-50%, -50%) scale(0.95); opacity: 0; pointer-events: none; -webkit-mask-image: -webkit-radial-gradient(white, black); } #videoContainerWrapper.expanded{ pointer-events:auto; opacity:1; transform: translate(-50%, -50%) scale(1); } #cameraVideo{ position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; display:block; transform: scaleX(-1); opacity: 0; transition: opacity 0.4s ease; } #cameraVideo.live { opacity: 1; } .camera-flash { position: absolute; inset: 0; background: white; opacity: 0; pointer-events: none; z-index: 10; } .camera-flash.fire { animation: flashAnim 0.3s ease-out; } @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } } .camera-ui { position:absolute; bottom:0; left:0; right:0; padding:30px; background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 100%); display:flex; align-items:center; justify-content:center; z-index:15; opacity:0; pointer-events:none; transition:opacity 0.4s ease; } #cameraVideo.live ~ .camera-ui { opacity: 1; pointer-events: auto; } .single-shutter-btn { width: 72px; height: 72px; border-radius: 50%; background: #fff; border: 5px solid rgba(255,255,255,0.35); background-clip: padding-box; box-shadow: 0 4px 20px rgba(0,0,0,0.4); cursor: pointer; transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1); -webkit-tap-highlight-color: transparent; } .single-shutter-btn:active { transform: scale(0.85); } .single-shutter-btn.loading { animation: pulseShutter 1s infinite; pointer-events: none; border: 5px solid var(--dynamic-primary); } @keyframes pulseShutter { 0% { transform: scale(1); } 50% { transform: scale(0.9); } 100% { transform: scale(1); } }
+/* SHARED INPUTS & BUTTONS */
+.input-label { font-weight:700; font-size:12px; display:block; margin-bottom:8px; color:var(--label-text); text-transform:uppercase; letter-spacing:0.5px;}
+.req-star { color: var(--error-color); font-weight: 900; }
+.ui-input, .ui-select { width:100%; height:52px; padding:0 16px; border-radius:14px; border:1.5px solid var(--input-border); font-size:16px; font-weight:700; background:var(--input-bg); color:var(--text-primary); outline:none; -webkit-appearance:none; position:relative; z-index:10; cursor:pointer;}
+.ui-input:focus, .ui-select:focus { border-color:var(--dynamic-primary); background:var(--bg-primary); box-shadow:0 0 0 3px var(--dynamic-light); }
+.ui-input:read-only { background: var(--bg-secondary); color: var(--dynamic-primary); border-color: transparent; }
 
-#attSuccessScreen { display:none;flex-direction:column;align-items:center; justify-content:center; padding:10px 4px;text-align:center;width:100%; } .success-photo{ width: 120px; height: 120px; object-fit: cover; border-radius: 50%; box-shadow: 0 0 0 4px var(--dynamic-primary); margin-bottom: 20px; animation: bounceIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); cursor: zoom-in; position: relative; z-index: 10; -webkit-tap-highlight-color: transparent; } .success-badge{ color:var(--text-primary);font-size:14px;font-weight:800; text-transform:uppercase;padding:8px 24px;border-radius:999px; display:inline-flex; align-items:center; box-shadow:0 4px 10px rgba(0,0,0,0.1); animation:bounceIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s backwards; margin-bottom: 24px; background: var(--bg-primary); } .success-card{ background-color: var(--glass-bg) !important; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius:20px; padding:24px 20px; width:100%; margin-bottom:20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); animation:bounceIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s backwards; } .success-name{font-size:26px;font-weight:800;color:var(--dynamic-primary);margin-bottom:8px} .success-msg {font-size:15px;font-weight:600;color:var(--text-secondary);line-height:1.5}
-.success-tick { width: 22px; height: 22px; display: block; margin-left: 10px; } .success-tick-circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 4; stroke-miterlimit: 10; fill: none; } .success-tick-check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; } .animate-circle { animation: strokeTick 0.5s cubic-bezier(0.65, 0, 0.45, 1) forwards; } .animate-check { animation: strokeTick 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.4s forwards; } @keyframes strokeTick { 100% { stroke-dashoffset: 0; } }
+.btn-primary { width:100%; height:52px; border-radius:14px; border:none; font-size:15px; font-weight:800; background:var(--button-secondary-bg); color:var(--dynamic-primary); cursor:pointer; display:flex; align-items:center; justify-content:center;}
+.btn-primary:active { transform: scale(0.97); }
+.btn-primary:disabled { opacity: 0.5; pointer-events: none; }
+.btn-primary.solid { background:var(--dynamic-primary); color:#fff; margin-top:8px;}
+.btn-secondary { width:100%; height:52px; border-radius:14px; border: 2px solid var(--border-color); font-size:15px; font-weight:800; background:var(--input-bg); color:var(--text-primary); cursor:pointer; display:flex; align-items:center; justify-content:center; margin-top:8px;}
+.btn-secondary:active { transform: scale(0.97); }
+.btn-spinner { border: 2px solid rgba(0,0,0,0.1); border-top-color: currentColor; border-radius: 50%; animation: spin 0.6s linear infinite; width:16px; height:16px; margin-right:8px;}
 
-.modal-overlay { display:none; position:fixed; inset:0; background:var(--modal-overlay); z-index:19999; flex-direction:column; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); } .modal-box { background:var(--bg-primary); padding:28px; border-radius:20px; text-align:center; max-width:380px; width:100%; box-shadow: 0 20px 40px rgba(0,0,0,0.2); max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; } .modal-instructions{ background:var(--input-bg);color:var(--text-secondary); padding:16px;border-radius:12px;margin-bottom:18px; font-size:14px;line-height:1.6;text-align:left; border: 1px solid var(--border-color); } .receipt-header { display:none; } .receipt-content { flex: 1; overflow-y: scroll; -webkit-overflow-scrolling: touch; text-align: left; padding: 16px; background: var(--bg-primary); border-radius: 12px; margin: 16px 0; border: 1.5px solid var(--border-color); color: var(--text-primary); font-size: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.05); max-height: 45vh; } .modal-actions-row { display: flex; gap: 8px; width: 100%; flex-shrink: 0; } .btn-modal { flex: 1; height: 46px; border-radius: 12px; font-weight: 800; font-size: 14px; border: none; cursor: pointer; transition: transform 0.15s ease, background-color 0.2s ease; color: white; display: flex; align-items: center; justify-content: center;} .btn-modal:active { transform: scale(0.95); } .btn-edit { background: #6b7280; } .btn-save { background: #3b82f6; } .btn-confirm { background: #10b981; }
+/* ORDERS & SECTIONS SPECIFIC - NO GLOW */
+.section-card, .order-group { 
+  background-color: var(--glass-bg) !important; 
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border); 
+  border-radius: 16px; 
+  margin-bottom: 15px; 
+  overflow: hidden; 
+  position: relative;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.04); /* Clean, subtle shadow */
+}
+.section-card::before, .order-group::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4.5px;
+  background-color: var(--dynamic-primary); z-index: 5; transition: background-color 0.6s ease;
+}
+/* Neutral blend state if no theme assigned */
+body:not(.theme-chandarana):not(.theme-carrefour) .section-card::before,
+body:not(.theme-chandarana):not(.theme-carrefour) .order-group::before {
+  background: linear-gradient(to bottom, var(--theme-chan), var(--theme-carr));
+}
 
-.profile-summary-item { padding: 10px 12px; border-bottom: 1px solid rgba(156, 163, 175, 0.15); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background-color 0.2s; -webkit-tap-highlight-color: transparent; } .profile-summary-item:last-child { border-bottom: none; } .profile-summary-item:active { background-color: var(--dynamic-light); border-radius: 8px; } .profile-summary-item strong { color: var(--dynamic-primary); font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 2px; font-weight: 900; } .profile-summary-item span { color: var(--text-primary); font-size: 14px; font-weight: 700; } .edit-icon { font-size: 14px; opacity: 0.6; }
-#photoZoomContainer { display:none; position:fixed; inset:0; z-index:20000; pointer-events:none; } #photoZoomBg { position: absolute; inset:0; } #zoomedImage { position: absolute; object-fit: cover; box-shadow: 0 0 0 4px var(--dynamic-primary), 0 25px 60px rgba(0,0,0,0.6); z-index: 20001; cursor: zoom-out; }
+.section-card { padding: 14px; }
+#o-id { color: var(--dynamic-primary); font-weight: 900; font-size: 18px; }
+#o-id::placeholder { color: var(--text-tertiary); opacity: 0.8; font-weight: 700; }
+.locked-form { opacity: 0.4; pointer-events: none; transition: opacity 0.4s ease; }
+.locked-form.unlocked { opacity: 1; pointer-events: auto; }
+.order-group-title { padding: 14px 16px; font-size: 14px; font-weight: 900; color: var(--text-primary); cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: transparent; outline: none; list-style: none; }
+.order-group-title::-webkit-details-marker { display: none; }
+.order-group-title::after { content: '+'; font-size: 18px; color: var(--dynamic-primary); font-weight: 400;}
+.order-group[open] .order-group-title::after { content: '-'; transform: rotate(180deg); }
+.order-group-content { padding: 14px; border-top: 1px solid rgba(156, 163, 175, 0.15); }
+
+/* Fainter table dividers */
+table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: center; }
+th, td { padding: 8px 4px; border-bottom: 1px solid rgba(156, 163, 175, 0.15); border-right: 1px solid rgba(156, 163, 175, 0.15); }
+th { background: transparent; font-weight: 900; font-size: 12px; width: 35%; text-transform: uppercase;}
+th:first-child, td.flavor-name { position: sticky; left: 0; background: var(--glass-bg); z-index: 10; text-align: left; padding-left: 8px; font-weight:800; font-size:11px;}
+.square-input { width: 50px; height: 34px; border-radius: 10px; margin: 0 auto; background: var(--input-bg); border: 2px solid var(--input-border); color: var(--text-tertiary); font-weight: 900; display: flex; align-items: center; justify-content: center; }
+.square-input.has-value { background: var(--dynamic-primary); color: #fff; border-color: var(--dynamic-primary); }
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-label input { display: none; }
+.chip-span { display: inline-flex; background: var(--input-bg); border: 1px solid var(--input-border); padding: 10px 16px; border-radius: 50px; font-size: 13px; font-weight: 800; color: var(--text-secondary); }
+.chip-label input:checked + .chip-span { background: var(--dynamic-primary); color: #fff; border-color: var(--dynamic-primary); transform: translateY(-2px); }
+
+/* ATTENDANCE SPECIFIC */
+.app-wrapper { position: relative; width: 100%; max-width: 440px; display: flex; flex-direction:column; align-items: center; justify-content: center; padding-top:20px; z-index: 10;}
+.hanging-sign-wrapper { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: -5px; perspective: 800px; z-index: 30; width: 240px; pointer-events: none; }
+.chain { position: absolute; top: -30px; width: 5px; height: 34px; background: linear-gradient(to right, #9ca3af, #f3f4f6, #9ca3af); border-radius: 3px; box-shadow: inset 0 0 3px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2); z-index: 1; pointer-events: none; }
+.chain::before { content: ''; position: absolute; top: -6px; left: -3.5px; width: 12px; height: 12px; border-radius: 50%; background-color: var(--dynamic-primary); border: 3.5px solid #d1d5db; box-shadow: 0 8px 12px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.4), inset 0 2px 4px rgba(0,0,0,0.7); box-sizing: border-box; pointer-events: none; }
+body:not(.theme-chandarana):not(.theme-carrefour) .chain::before { background-color: #0d9488; }
+
+.left-chain { left: 40px; } .right-chain { right: 40px; }
+.hanging-sign { background-color: var(--dynamic-primary); color: #ffffff; text-shadow: 0 2px 5px rgba(0,0,0,0.3); padding: 12px 10px; border-radius: 12px; font-weight: 900; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; text-align: center; width: 100%; display: block; box-sizing: border-box; box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 -3px 0 rgba(0,0,0,0.15); transform-origin: top center; position: relative; z-index: 2; }
+body:not(.theme-chandarana):not(.theme-carrefour) .hanging-sign { background: linear-gradient(135deg, var(--theme-chan), var(--theme-carr)); }
+
+@keyframes swing { 0% { transform: rotateX(0deg) rotateZ(0deg); } 20% { transform: rotateX(25deg) rotateZ(-3deg); } 40% { transform: rotateX(-15deg) rotateZ(2deg); } 60% { transform: rotateX(8deg) rotateZ(-1deg); } 80% { transform: rotateX(-3deg) rotateZ(0deg); } 100% { transform: rotateX(0deg) rotateZ(0deg); } }
+.hanging-sign.nudge { animation: swing 0.7s cubic-bezier(0.25, 1, 0.5, 1); }
+
+.network-indicator{ position:absolute;top:18px;left:18px;width:8px;height:8px;border-radius:50%; background-color:var(--dynamic-primary);opacity:0.9; box-shadow: 0 0 6px var(--dynamic-primary); }
+body:not(.theme-chandarana):not(.theme-carrefour) .network-indicator { background-color: #0d9488; box-shadow: 0 0 6px #0d9488; }
+.network-indicator.offline{background-color:var(--text-tertiary);opacity:0.4; box-shadow:none;}
+
+.step-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px 16px; position: relative; z-index: 5;}
+.step { opacity:0.3; pointer-events:none; transition: opacity 0.4s ease; position: relative; z-index: 10;}
+.step.activeStep { opacity:1; pointer-events:auto; animation:bounceIn 0.45s ease; }
+
+/* DYNAMIC MESSAGES */
+.msg{ font-size:13px;font-weight:600;margin-top:8px; min-height:42px; align-items:flex-start; line-height:1.4; color:var(--text-tertiary);display:flex; transition: opacity 0.3s ease, color 0.3s ease; opacity: 1; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+.msg.success{color:var(--dynamic-primary);font-size:14px} .msg.error{color:var(--error-color)}
+.msg .dot{ display:inline-flex;justify-content:center;align-items:center; width:16px;height:16px;background:var(--dynamic-primary);border-radius:50%; margin-right:8px;flex-shrink:0;position:relative; margin-top: 2px; }
+.msg .dot::after{ content:'';position:absolute;top:45%;left:50%; width:3.5px;height:7px; border-right:2px solid #fff;border-bottom:2px solid #fff; transform:translate(-50%,-50%) rotate(45deg); }
+
+/* GLASS OVERLAYS & CAMERA */
+.glass-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; height: 100dvh; background: rgba(10, 10, 10, 0.6); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); margin: 0; padding: 0; z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; transform: translateZ(0); }
+.glass-overlay.show { opacity: 1; pointer-events: auto; }
+#videoContainerWrapper{ position:fixed; top: 50%; left: 50%; width: 85%; max-width: 380px; aspect-ratio: 3 / 4; border-radius: 28px; overflow: hidden; z-index: 10001; background-color: #000; box-shadow: 0 25px 60px rgba(0,0,0,0.6); transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.25, 1, 0.4, 1); transform: translate(-50%, -50%) scale(0.95); opacity: 0; pointer-events: none; -webkit-mask-image: -webkit-radial-gradient(white, black); }
+#videoContainerWrapper.expanded{ pointer-events:auto; opacity:1; transform: translate(-50%, -50%) scale(1); }
+#cameraVideo{ position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; display:block; transform: scaleX(-1); opacity: 0; transition: opacity 0.4s ease; }
+#cameraVideo.live { opacity: 1; }
+.camera-flash { position: absolute; inset: 0; background: white; opacity: 0; pointer-events: none; z-index: 10; }
+.camera-flash.fire { animation: flashAnim 0.3s ease-out; }
+@keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+/* SINGLE SHUTTER CAMERA UI */
+.camera-ui { position:absolute; bottom:0; left:0; right:0; padding:30px; background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 100%); display:flex; align-items:center; justify-content:center; z-index:15; opacity:0; pointer-events:none; transition:opacity 0.4s ease; }
+#cameraVideo.live ~ .camera-ui { opacity: 1; pointer-events: auto; }
+.single-shutter-btn { width: 72px; height: 72px; border-radius: 50%; background: #fff; border: 5px solid rgba(255,255,255,0.35); background-clip: padding-box; box-shadow: 0 4px 20px rgba(0,0,0,0.4); cursor: pointer; transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1); -webkit-tap-highlight-color: transparent; }
+.single-shutter-btn:active { transform: scale(0.85); }
+.single-shutter-btn.loading { animation: pulseShutter 1s infinite; pointer-events: none; border: 5px solid var(--dynamic-primary); }
+@keyframes pulseShutter { 0% { transform: scale(1); } 50% { transform: scale(0.9); } 100% { transform: scale(1); } }
+
+/* SUCCESS SCREENS & TICK ANIMATIONS */
+#attSuccessScreen { display:none;flex-direction:column;align-items:center; justify-content:center; padding:10px 4px;text-align:center;width:100%; }
+.success-photo{ width: 120px; height: 120px; object-fit: cover; border-radius: 50%; box-shadow: 0 0 0 4px var(--dynamic-primary); margin-bottom: 20px; animation: bounceIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); cursor: zoom-in; position: relative; z-index: 10; -webkit-tap-highlight-color: transparent; }
+.success-badge{ color:var(--text-primary);font-size:14px;font-weight:800; text-transform:uppercase;padding:8px 24px;border-radius:999px; display:inline-flex; align-items:center; box-shadow:0 4px 10px rgba(0,0,0,0.1); animation:bounceIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s backwards; margin-bottom: 24px; background: var(--bg-primary); }
+.success-card{ 
+    background-color: var(--glass-bg) !important; 
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius:20px; padding:24px 20px; width:100%; margin-bottom:20px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    animation:bounceIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s backwards; 
+}
+.success-name{font-size:26px;font-weight:800;color:var(--dynamic-primary);margin-bottom:8px}
+.success-msg {font-size:15px;font-weight:600;color:var(--text-secondary);line-height:1.5}
+
+.success-tick { width: 22px; height: 22px; display: block; margin-left: 10px; }
+.success-tick-circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 4; stroke-miterlimit: 10; fill: none; }
+.success-tick-check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; }
+.animate-circle { animation: strokeTick 0.5s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
+.animate-check { animation: strokeTick 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.4s forwards; }
+@keyframes strokeTick { 100% { stroke-dashoffset: 0; } }
+
+/* MODALS */
+.modal-overlay { display:none; position:fixed; inset:0; background:var(--modal-overlay); z-index:19999; flex-direction:column; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); }
+.modal-box { background:var(--bg-primary); padding:28px; border-radius:20px; text-align:center; max-width:380px; width:100%; box-shadow: 0 20px 40px rgba(0,0,0,0.2); max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; }
+.modal-instructions{ background:var(--input-bg);color:var(--text-secondary); padding:16px;border-radius:12px;margin-bottom:18px; font-size:14px;line-height:1.6;text-align:left; border: 1px solid var(--border-color); }
+.receipt-header { display:none; }
+.receipt-content { flex: 1; overflow-y: scroll; -webkit-overflow-scrolling: touch; text-align: left; padding: 16px; background: var(--bg-primary); border-radius: 12px; margin: 16px 0; border: 1.5px solid var(--border-color); color: var(--text-primary); font-size: 14px; font-weight: 700; box-shadow: 0 4px 12px var(--soft-shadow); max-height: 45vh; }
+.modal-actions-row { display: flex; gap: 8px; width: 100%; flex-shrink: 0; }
+.btn-modal { flex: 1; height: 46px; border-radius: 12px; font-weight: 800; font-size: 14px; border: none; cursor: pointer; transition: transform 0.15s ease, background-color 0.2s ease; color: white; display: flex; align-items: center; justify-content: center;}
+.btn-modal:active { transform: scale(0.95); }
+.btn-edit { background: #6b7280; } .btn-save { background: #3b82f6; } .btn-confirm { background: #10b981; }
+
+.profile-summary-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(156, 163, 175, 0.15);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.profile-summary-item:last-child {
+  border-bottom: none;
+}
+.profile-summary-item:active {
+  background-color: var(--dynamic-light);
+  border-radius: 8px;
+}
+.profile-summary-item strong {
+  color: var(--dynamic-primary);
+  font-size: 11px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 900;
+}
+.profile-summary-item span {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+.edit-icon {
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+#photoZoomContainer { display:none; position:fixed; inset:0; z-index:20000; pointer-events:none; }
+#photoZoomBg { position: absolute; inset:0; }
+#zoomedImage { position: absolute; object-fit: cover; box-shadow: 0 0 0 4px var(--dynamic-primary), 0 25px 60px rgba(0,0,0,0.6); z-index: 20001; cursor: zoom-out; }
 </style>
 </head>
 <body class="theme-welcome">
@@ -159,89 +416,163 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
 <div id="layerChandarana" class="bg-layer layer-chandarana"></div>
 <div id="layerCarrefour" class="bg-layer layer-carrefour"></div>
 
-<!-- VIEW 1: WELCOME SCREEN -->
+<!-- =========================
+     VIEW 1: WELCOME SCREEN
+========================== -->
 <div id="view-welcome" class="welcome-section active" style="display: flex;">
-  <div class="welcome-top" id="welcomeTop"><h1 class="welcome-title">STENTOR<br>ENT<br>LTD.</h1></div>
-  <div class="welcome-cycler"><div id="welcomeMessage">Welcome</div></div>
+  <div class="welcome-top" id="welcomeTop">
+    <h1 class="welcome-title">STENTOR<br>ENT<br>LTD.</h1>
+  </div>
+  
+  <div class="welcome-cycler">
+    <div id="welcomeMessage">Welcome</div>
+  </div>
+
   <div class="welcome-bottom" id="welcomeBottom">
     <div class="welcome-date" id="welcome-date"></div>
     <div class="welcome-time" id="welcome-time"></div>
     <div class="welcome-tagline">your home of fresh juice</div>
     <div class="welcome-statement">drink well live fresh</div>
+    
     <div class="welcome-next-arrow" onclick="goToMenu(event)">
-      <svg class="thick-arrow-icon" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      <svg class="thick-arrow-icon" viewBox="0 0 24 24">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
     </div>
   </div>
 </div>
 
-<!-- VIEW 2: HUB MENU -->
+<!-- =========================
+     VIEW 2: HUB MENU
+========================== -->
 <div id="view-menu" class="view-section" style="justify-content: center; min-height: 100vh;">
   <div class="menu-container">
+    
+    <!-- Animated Thought Bubble Profile Button -->
     <div class="thought-bubble-container" onclick="openProfile()">
-      <div class="bubble-small"></div><div class="bubble-medium"></div>
-      <div class="bubble-large"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>Profile</span></div>
+      <div class="bubble-small"></div>
+      <div class="bubble-medium"></div>
+      <div class="bubble-large">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span>Profile</span>
+      </div>
     </div>
-    <div class="hub-logo">STENTOR OPS</div><div class="menu-subtitle">Select a module</div>
+
+    <div class="hub-logo">STENTOR OPS</div>
+    <div class="menu-subtitle">Select a module</div>
+    
     <div class="hub-grid">
       <div class="hub-card solid-panel" onclick="openAttendance()">
-        <div class="hc-icon-box hc-alarm"><svg viewBox="0 0 24 24" width="36" height="36" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2 2"></path><path d="M5 3L2 6"></path><path d="M19 3l3 3"></path></svg></div>
+        <div class="hc-icon-box hc-alarm">
+          <svg viewBox="0 0 24 24" width="36" height="36" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2 2"></path><path d="M5 3L2 6"></path><path d="M19 3l3 3"></path></svg>
+        </div>
         <div class="hc-text">Attendance</div>
       </div>
+      
       <div class="hub-card solid-panel" onclick="openOrder()">
-        <div class="hc-icon-box hc-cart"><svg viewBox="0 0 24 24" width="36" height="36" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></div>
+        <div class="hc-icon-box hc-cart">
+          <svg viewBox="0 0 24 24" width="36" height="36" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        </div>
         <div class="hc-text">Place Order</div>
       </div>
     </div>
   </div>
-  <div class="inline-back-wrapper" style="margin-top: 30px;"><div class="inline-back solid-panel" onclick="goToWelcome()">← Welcome</div></div>
+  
+  <div class="inline-back-wrapper" style="margin-top: 30px;">
+    <div class="inline-back solid-panel" onclick="goToWelcome()">← Welcome</div>
+  </div>
 </div>
 
-<!-- VIEW 3: PROFILE REGISTRATION -->
+<!-- =========================
+     VIEW 3: PROFILE REGISTRATION
+========================== -->
 <div id="view-profile" class="view-section">
   <div class="app-container scrollable solid-panel">
     <h2 style="font-weight:900; color:var(--text-primary); text-align:center; font-size: 18px; margin-bottom: 20px;">PROFILE REGISTRATION</h2>
+    
     <form id="profileForm" onsubmit="reviewProfile(event)">
+      <!-- STEP 1 -->
       <div class="section-card" id="p-step1">
         <label class="input-label">ID Number <span class="req-star">*</span></label>
         <input type="tel" id="p-id" class="ui-input" placeholder="Enter ID to begin" required autocomplete="off" oninput="instantProfileStaffCheck(this.value)">
         <div id="p-staffMsg" class="msg" style="min-height:20px; margin-top:4px;"></div>
+        
+        <!-- Hidden initially until entered -->
         <div id="p-step1-fields" style="display:none; animation: sectionFadeIn 0.4s ease forwards;">
-          <label class="input-label" style="margin-top: 15px;">Full Name <span class="req-star">*</span></label><input type="text" id="p-name" class="ui-input" required>
-          <label class="input-label" style="margin-top: 15px;">Phone Number <span class="req-star">*</span></label><input type="tel" id="p-phone" class="ui-input" required>
-          <label class="input-label" style="margin-top: 15px;">Default Branch <span class="req-star">*</span></label><select id="p-branch" class="ui-select" required onchange="triggerProfileBranchChange()"><option value="">Select Branch</option></select>
+          <label class="input-label" style="margin-top: 15px;">Full Name <span class="req-star">*</span></label>
+          <input type="text" id="p-name" class="ui-input" required>
+          
+          <label class="input-label" style="margin-top: 15px;">Phone Number <span class="req-star">*</span></label>
+          <input type="tel" id="p-phone" class="ui-input" required>
+          
+          <label class="input-label" style="margin-top: 15px;">Default Branch <span class="req-star">*</span></label>
+          <select id="p-branch" class="ui-select" required onchange="triggerProfileBranchChange()"><option value="">Select Branch</option></select>
+
           <button type="button" class="btn-primary solid" onclick="nextProfileStep(2)" style="margin-top:20px;">Next →</button>
         </div>
       </div>
+
+      <!-- STEP 2 -->
       <div class="section-card" id="p-step2" style="display:none;">
         <label class="input-label">Email Address <span class="req-star">*</span></label><input type="email" id="p-email" class="ui-input" required>
+        
         <label class="input-label" style="margin-top: 15px;">Alternative Contact <span class="req-star">*</span></label><input type="tel" id="p-altContact" class="ui-input" required>
+        
         <label class="input-label" style="margin-top: 15px;">Physical Address (Area) <span class="req-star">*</span></label><input type="text" id="p-address" class="ui-input" required>
+        
         <label class="input-label" style="margin-top: 15px;">Next of Kin Name <span class="req-star">*</span></label><input type="text" id="p-nok" class="ui-input" required>
+        
         <label class="input-label" style="margin-top: 15px;">Next of Kin Contact <span class="req-star">*</span></label><input type="tel" id="p-nokContact" class="ui-input" required>
-        <div style="display:flex; gap:10px; margin-top:20px;"><button type="button" class="btn-secondary" onclick="prevProfileStep(1)" style="margin-top:0;">← Back</button><button type="button" class="btn-primary solid" onclick="nextProfileStep(3)" style="margin-top:0;">Next →</button></div>
+        
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button type="button" class="btn-secondary" onclick="prevProfileStep(1)" style="margin-top:0;">← Back</button>
+          <button type="button" class="btn-primary solid" onclick="nextProfileStep(3)" style="margin-top:0;">Next →</button>
+        </div>
       </div>
+
+      <!-- STEP 3 -->
       <div class="section-card" id="p-step3" style="display:none;">
         <label class="input-label">Bank Name <span class="req-star">*</span></label><input type="text" id="p-bank" class="ui-input" required>
+        
         <label class="input-label" style="margin-top: 15px;">Account Number <span class="req-star">*</span></label><input type="tel" id="p-acc" class="ui-input" required>
+        
         <label class="input-label" style="margin-top: 15px;">Confirm Account Number <span class="req-star">*</span></label><input type="tel" id="p-acc-confirm" class="ui-input" required>
         <div id="p-accMsg" class="msg" style="min-height:20px; margin-top:4px;"></div>
+
         <label class="input-label" style="margin-top: 15px;">SHA Number <span class="req-star">*</span></label><input type="text" id="p-sha" class="ui-input" required>
+        
         <label class="input-label" style="margin-top: 15px;">NSSF Number <span class="req-star">*</span></label><input type="text" id="p-nssf" class="ui-input" required>
+        
         <label class="input-label" style="margin-top: 15px;">KRA PIN <span class="req-star">*</span></label><input type="text" id="p-kra" class="ui-input" required style="text-transform:uppercase;">
+        
         <label class="input-label" style="margin-top: 15px;">Month & Year of Employment <span class="req-star">*</span></label><input type="month" id="p-emp" class="ui-input" required>
-        <div style="display:flex; gap:10px; margin-top:20px;"><button type="button" class="btn-secondary" onclick="prevProfileStep(2)" style="margin-top:0;">← Back</button><button type="submit" class="btn-primary solid" id="profileReviewBtn" style="margin-top:0;">Review Details</button></div>
+
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button type="button" class="btn-secondary" onclick="prevProfileStep(2)" style="margin-top:0;">← Back</button>
+          <button type="submit" class="btn-primary solid" id="profileReviewBtn" style="margin-top:0;">Review Details</button>
+        </div>
       </div>
     </form>
+    
     <div id="profileSuccess" style="display:none; text-align:center; padding: 30px 10px;">
       <div style="width:80px;height:80px;background:#10b981;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 16px;">✓</div>
       <h2 style="font-weight:900; color:var(--text-primary);" id="profileSuccessText">Profile Saved!</h2>
       <button class="btn-secondary" style="margin-top:20px;" onclick="goToMenu()">Return to Menu</button>
     </div>
   </div>
-  <div class="inline-back-wrapper"><div class="inline-back solid-panel" onclick="goToMenu()">← Menu</div></div>
+  
+  <div class="inline-back-wrapper">
+    <div class="inline-back solid-panel" onclick="goToMenu()">← Menu</div>
+  </div>
 </div>
 
-<!-- VIEW 4: ORDERS -->
+<!-- =========================
+     VIEW 4: ORDERS
+========================== -->
 <div id="view-orders" class="view-section">
   <div class="app-container scrollable solid-panel">
     <div class="top-bar" id="orderTopBar">
@@ -251,6 +582,8 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
         <button class="pill-btn" id="o-btn-carrefour" onclick="switchTerminalOrder('carrefour')">Carrefour</button>
       </div>
     </div>
+
+    <!-- Wrapped form logic so it hides if neutral state -->
     <div id="orderFormInner" style="display: none;">
         <form id="orderForm" onsubmit="processOrder(event)">
         <div class="section-card" style="display:flex; gap:12px; align-items:flex-end;">
@@ -258,16 +591,20 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
             <div id="o-name-container" style="opacity:0; flex:1;"><label class="input-label">Name</label><input type="text" id="o-name" class="ui-input" placeholder="Name" readonly></div>
         </div>
         <div id="o-staffMsg" class="msg" style="min-height:20px; margin-top:-5px; margin-bottom:10px; padding-left:14px;"></div>
+
         <div id="o-expanded-fields" style="display:none;">
             <div class="section-card" style="display:flex; gap:12px;">
             <div style="flex:1; position:relative;">
                 <label class="input-label">Branch <span id="o-branch-lock-icon" style="font-size:10px; opacity:0.6; font-weight:700; text-transform:none; float:right;">🔒 Hold</span></label>
                 <select id="o-branch" class="ui-select" style="pointer-events:none; appearance:none;"></select>
-                <div id="o-branch-overlay" style="position:absolute; top:20px; left:0; right:0; bottom:0; z-index:11;" ontouchstart="startBranchHold(event)" ontouchend="cancelBranchHold()" ontouchcancel="cancelBranchHold()" onmousedown="startBranchHold(event)" onmouseup="cancelBranchHold()" onmouseleave="cancelBranchHold()"></div>
+                <div id="o-branch-overlay" style="position:absolute; top:20px; left:0; right:0; bottom:0; z-index:11;"
+                    ontouchstart="startBranchHold(event)" ontouchend="cancelBranchHold()" ontouchcancel="cancelBranchHold()"
+                    onmousedown="startBranchHold(event)" onmouseup="cancelBranchHold()" onmouseleave="cancelBranchHold()"></div>
             </div>
             <div style="flex:1;"><label class="input-label">Phone</label><input type="tel" id="o-phone" class="ui-input" readonly></div>
             </div>
         </div>
+
         <div id="o-locked-section" class="locked-form">
             <div id="dynamicOrderContent"></div>
             <div class="section-card">
@@ -278,21 +615,32 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
         </div>
         </form>
     </div>
+
     <div class="success-screen" id="orderSuccessScreen" style="display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
       <div style="width:80px;height:80px;background:var(--dynamic-primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 16px;">✓</div>
       <h2 style="font-weight:900; margin-bottom:8px; color: var(--text-primary);">Order Sent!</h2>
       <button class="btn-primary solid" style="max-width:200px;" onclick="resetOrderForm()">New Order</button>
     </div>
   </div>
-  <div class="inline-back-wrapper"><div class="inline-back solid-panel" onclick="goToMenu()">← Menu</div></div>
+  
+  <div class="inline-back-wrapper">
+    <div class="inline-back solid-panel" onclick="goToMenu()">← Menu</div>
+  </div>
 </div>
 
-<!-- VIEW 5: ATTENDANCE -->
+<!-- =========================
+     VIEW 5: ATTENDANCE
+========================== -->
 <div id="view-attendance" class="view-section">
   <div class="app-wrapper">
-    <div class="hanging-sign-wrapper" id="signWrapper"><div class="chain left-chain"></div><div class="chain right-chain"></div><div class="hanging-sign nudge" id="storeSign">SELECT SHOP</div></div>
+    <div class="hanging-sign-wrapper" id="signWrapper">
+      <div class="chain left-chain"></div><div class="chain right-chain"></div>
+      <div class="hanging-sign nudge" id="storeSign">SELECT SHOP</div>
+    </div>
+
     <div class="app-container solid-panel" id="attMainContainer">
       <div id="networkIndicator" class="network-indicator"></div>
+
       <div class="top-bar" id="attTopBar">
         <div class="terminal-pill-wrapper" id="a-terminal-wrapper">
           <div class="pill-slider" id="a-pill-slider"></div>
@@ -300,40 +648,85 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
           <button class="pill-btn" id="a-btn-carrefour" onclick="switchTerminalAtt('carrefour')">Carrefour</button>
         </div>
       </div>
+
+      <!-- Wrapped Form logic so it hides if neutral state -->
       <div id="attMainFormInner" style="display: none; width: 100%;">
         <div class="step-grid">
-          <div id="step1" class="step activeStep"><label class="input-label">Branch</label><select id="branch" class="ui-select"><option value="">Loading...</option></select><div id="branchMsg" class="msg"></div></div>
-          
-          <div id="step2" class="step"><label class="input-label">Staff ID</label><input id="staffID" class="ui-input" type="tel" placeholder="Enter ID" autocomplete="off" oninput="handleStaffInput()"><div id="staffMsg" class="msg"></div></div>
-          
-          <div id="step3" class="step"><label class="input-label">GPS Location</label><button class="btn-primary" onclick="verifyGPS()">Verify</button><div id="gpsMsg" class="msg"></div></div>
-          <div id="step4" class="step"><label class="input-label">Identity</label><button class="btn-primary" id="openCameraBtn" onclick="startCamera()">Take Selfie</button><div id="cameraMsg" class="msg"></div></div>
+          <div id="step1" class="step activeStep">
+            <label class="input-label">Branch</label>
+            <select id="branch" class="ui-select"><option value="">Loading...</option></select>
+            <div id="branchMsg" class="msg"></div>
+          </div>
+          <div id="step2" class="step">
+            <label class="input-label">Staff ID</label>
+            <input id="staffID" class="ui-input" type="tel" placeholder="Enter ID" autocomplete="off">
+            <div id="staffMsg" class="msg"></div>
+          </div>
+          <div id="step3" class="step">
+            <label class="input-label">GPS Location</label>
+            <button class="btn-primary" onclick="verifyGPS()">Verify</button>
+            <div id="gpsMsg" class="msg"></div>
+          </div>
+          <div id="step4" class="step">
+            <label class="input-label">Identity</label>
+            <button class="btn-primary" id="openCameraBtn" onclick="startCamera()">Take Selfie</button>
+            <div id="cameraMsg" class="msg"></div>
+          </div>
         </div>
       </div>
+
       <div id="attSuccessScreen">
         <img id="successPhoto" class="success-photo" src="" alt="Captured Selfie" onclick="openZoom()">
         <div style="display:flex; align-items:center; justify-content:center; margin-bottom:24px;">
-          <div class="success-badge" id="successBadge"><span id="successBadgeText">CLOCK IN</span><svg id="successSvg" class="success-tick" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle id="successTickCircle" class="success-tick-circle" cx="26" cy="26" r="25" /><path id="successTickCheck" class="success-tick-check" fill="none" stroke-width="4" stroke-linecap="round" d="M14.1 27.2l7.1 7.2 16.7-16.8" /></svg></div>
+          <div class="success-badge" id="successBadge">
+            <span id="successBadgeText">CLOCK IN</span>
+            <svg id="successSvg" class="success-tick" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+              <circle id="successTickCircle" class="success-tick-circle" cx="26" cy="26" r="25" />
+              <path id="successTickCheck" class="success-tick-check" fill="none" stroke-width="4" stroke-linecap="round" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+            </svg>
+          </div>
         </div>
-        <div class="success-card"><div class="success-name" id="successName"></div><div class="success-msg" id="successMsg"></div></div>
+        <div class="success-card">
+          <div class="success-name" id="successName"></div>
+          <div class="success-msg" id="successMsg"></div>
+        </div>
         <button class="btn-primary solid" onclick="resetAttForm()">← Submit Another</button>
       </div>
     </div>
   </div>
-  <div class="inline-back-wrapper"><div class="inline-back solid-panel" onclick="goToMenu()">← Menu</div></div>
+  
+  <div class="inline-back-wrapper">
+    <div class="inline-back solid-panel" onclick="goToMenu()">← Menu</div>
+  </div>
 </div>
 
-<!-- MODALS & OVERLAYS -->
+<!-- =========================
+     MODALS & OVERLAYS 
+========================== -->
 <div id="cameraBackdrop" class="glass-overlay" onclick="stopCamera()"></div>
-<div id="videoContainerWrapper"><video id="cameraVideo" autoplay playsinline muted></video><div id="cameraFlash" class="camera-flash"></div><div class="camera-ui"><button class="single-shutter-btn" id="shutterBtn" onclick="capturePhotoNative()"></button></div></div>
-<div id="photoZoomContainer"><div id="photoZoomBg" class="glass-overlay" onclick="closeZoom()"></div><img id="zoomedImage" src="" onclick="closeZoom()" /></div>
+<div id="videoContainerWrapper">
+  <video id="cameraVideo" autoplay playsinline muted></video>
+  <div id="cameraFlash" class="camera-flash"></div>
+  <div class="camera-ui">
+    <button class="single-shutter-btn" id="shutterBtn" onclick="capturePhotoNative()"></button>
+  </div>
+</div>
+
+<div id="photoZoomContainer">
+  <div id="photoZoomBg" class="glass-overlay" onclick="closeZoom()"></div>
+  <img id="zoomedImage" src="" onclick="closeZoom()" />
+</div>
 
 <div id="orderConfirmModal" class="modal-overlay">
   <div class="modal-box">
     <h3 id="modalShopName" style="margin:0 0 10px; font-size:24px; font-weight:900; text-transform:uppercase; color: var(--dynamic-primary);"></h3>
     <p style="font-size: 13px; color: var(--warning-text); margin-bottom: 12px; font-weight: 800; line-height: 1.4;">⚠️ Please keenly confirm your order details before submitting.</p>
     <div id="orderSummaryDetails" class="receipt-content"></div>
-    <div class="modal-actions-row"><button class="btn-modal btn-edit" onclick="closeConfirmModal()">Edit</button><button class="btn-modal btn-save" id="saveReceiptBtn" onclick="downloadReceipt(this)">Save</button><button class="btn-modal btn-confirm" id="confirmSendBtn" onclick="confirmAndSendOrder()">Confirm</button></div>
+    <div class="modal-actions-row">
+      <button class="btn-modal btn-edit" onclick="closeConfirmModal()">Edit</button>
+      <button class="btn-modal btn-save" id="saveReceiptBtn" onclick="downloadReceipt(this)">Save</button>
+      <button class="btn-modal btn-confirm" id="confirmSendBtn" onclick="confirmAndSendOrder()">Confirm</button>
+    </div>
   </div>
 </div>
 
@@ -342,27 +735,39 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
     <h3 style="margin:0 0 10px; font-size:20px; font-weight:900; text-transform:uppercase; color: var(--dynamic-primary);">Review Profile</h3>
     <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; font-weight: 700; line-height: 1.4;">Tap any detail to jump back and edit it.</p>
     <div id="profileSummaryDetails" class="receipt-content" style="padding: 6px; max-height: 50vh;"></div>
-    <div class="modal-actions-row"><button class="btn-modal btn-edit" onclick="document.getElementById('profileConfirmModal').style.display='none'">Back</button><button class="btn-modal btn-confirm" id="confirmProfileSendBtn" onclick="confirmAndSendProfile()">Submit</button></div>
+    <div class="modal-actions-row">
+      <button class="btn-modal btn-edit" onclick="document.getElementById('profileConfirmModal').style.display='none'">Back</button>
+      <button class="btn-modal btn-confirm" id="confirmProfileSendBtn" onclick="confirmAndSendProfile()">Submit</button>
+    </div>
   </div>
 </div>
 
 <div id="guideModal" class="modal-overlay">
   <div class="modal-box">
-    <div id="guideIcon" style="font-size:44px;margin-bottom:10px;">🛑</div><h3 id="guideTitle" style="color:var(--error-color);margin:10px 0 16px;font-size:20px;">Action Blocked</h3>
-    <div class="modal-instructions" id="guideText"></div><button class="btn-primary solid" onclick="document.getElementById('guideModal').style.display='none'">GOT IT</button>
+    <div id="guideIcon" style="font-size:44px;margin-bottom:10px;">🛑</div>
+    <h3 id="guideTitle" style="color:var(--error-color);margin:10px 0 16px;font-size:20px;">Action Blocked</h3>
+    <div class="modal-instructions" id="guideText"></div>
+    <button class="btn-primary solid" onclick="document.getElementById('guideModal').style.display='none'">GOT IT</button>
   </div>
 </div>
 
-<!-- JAVASCRIPT CORE -->
+<!-- =========================
+     JAVASCRIPT CORE
+========================== -->
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVy7MbFQmI6fVQM0ti52y05c0rc7-KvqUsU3Uq3WXzJ1CEqYP3vF0noIJbNtuL4nOT/exec";
 
-var Storage = { set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}, get:function(k){try{return localStorage.getItem(k)}catch(e){return null}}, remove:function(k){try{localStorage.removeItem(k)}catch(e){}} };
+var Storage = { 
+  set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}, 
+  get:function(k){try{return localStorage.getItem(k)}catch(e){return null}}, 
+  remove:function(k){try{localStorage.removeItem(k)}catch(e){}} 
+};
 
 function purgeCacheAtMidnight() {
   var today = new Date().toDateString(); 
   if (Storage.get('cache_date') !== today) {
-    Storage.remove('chandarana_portal_data'); Storage.remove('carrefour_portal_data'); Storage.remove('local_att_state'); Storage.set('cache_date', today);
+    Storage.remove('chandarana_portal_data'); Storage.remove('carrefour_portal_data'); Storage.remove('order_staff_chandarana'); Storage.remove('order_staff_carrefour'); Storage.remove('local_att_state'); 
+    Storage.set('cache_date', today);
   }
 }
 
@@ -370,92 +775,187 @@ function updateThemeColorMeta() {
   var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   var meta = document.getElementById('theme-color-meta');
   if (!meta) return;
-  if (document.body.className === '' || document.body.className === 'theme-welcome') { meta.setAttribute('content', isDark ? '#111827' : '#ffffff'); } else if (document.body.className.includes('chandarana')) { meta.setAttribute('content', isDark ? '#059669' : '#10b981'); } else if (document.body.className.includes('carrefour')) { meta.setAttribute('content', isDark ? '#2563eb' : '#3b82f6'); }
+  if (document.body.className === '' || document.body.className === 'theme-welcome') {
+      meta.setAttribute('content', isDark ? '#111827' : '#ffffff');
+  } else if (document.body.className.includes('chandarana')) {
+      meta.setAttribute('content', isDark ? '#059669' : '#10b981');
+  } else if (document.body.className.includes('carrefour')) {
+      meta.setAttribute('content', isDark ? '#2563eb' : '#3b82f6');
+  }
 }
 if (window.matchMedia) { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColorMeta); }
 
 let activeStore = null, currentTerminal = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-  updateTime(); setInterval(updateTime, 60000); startWelcomeCycler(); 
-  
-  // THE SILENT SECURITY WIPE - Protects existing users
-  runSecurityWipe();
-  
-  purgeCacheAtMidnight(); fetchPortalDataSilent(); loadSecureLocalCache();
-  window.addEventListener('online', () => { checkNetworkStatus(); processAttendanceQueue(); }); window.addEventListener('offline', checkNetworkStatus);
+  updateTime(); setInterval(updateTime, 60000); 
+  startWelcomeCycler();
+  purgeCacheAtMidnight(); 
+  loadOrderStaffBackground(); 
+  fetchPortalDataSilent(); 
+  window.addEventListener('online', () => { checkNetworkStatus(); processAttendanceQueue(); }); 
+  window.addEventListener('offline', checkNetworkStatus);
 });
 
-// ==========================================
-// ONE-TIME SECURITY WIPE FOR EXISTING USERS
-// ==========================================
-function runSecurityWipe() {
-  if (Storage.get('security_wipe_v1') !== 'true') {
-    Storage.remove('order_staff_chandarana');
-    Storage.remove('order_staff_carrefour');
-    Storage.set('security_wipe_v1', 'true');
-  }
-}
-
 function startWelcomeCycler() {
-  const centerEl = document.getElementById('welcomeMessage'), topEl = document.getElementById('welcomeTop'), botEl = document.getElementById('welcomeBottom');
-  const introPhrases = ["Welcome", "To Stentor", "Operations"], colors = ["#10b981", "#3b82f6", "#8b5cf6"];
-  let step = 0, introSkipped = false, introTimeouts = [];
+  const centerEl = document.getElementById('welcomeMessage');
+  const topEl = document.getElementById('welcomeTop');
+  const botEl = document.getElementById('welcomeBottom');
 
+  const introPhrases = ["Welcome", "To Stentor", "Operations"];
+  const colors = ["#10b981", "#3b82f6", "#8b5cf6"];
+  
+  let step = 0;
+  let introSkipped = false;
+  let introTimeouts = [];
+
+  // Tapping anywhere skips the intro sequence immediately
   document.getElementById('view-welcome').addEventListener('click', function(e) {
-      if (e.target.closest('.welcome-next-arrow')) return;
-      if (!introSkipped && step < introPhrases.length) { introSkipped = true; introTimeouts.forEach(clearTimeout); step = introPhrases.length; centerEl.style.transition = 'none'; startNormalCycle(); }
+      if (e.target.closest('.welcome-next-arrow')) return; // Ignore if they explicitly tapped the next arrow
+      if (!introSkipped && step < introPhrases.length) {
+          introSkipped = true;
+          introTimeouts.forEach(clearTimeout);
+          step = introPhrases.length;
+          centerEl.style.transition = 'none';
+          startNormalCycle();
+      }
   });
 
-  centerEl.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease'; centerEl.style.opacity = '0'; centerEl.style.transform = 'scale(0.8)';
+  centerEl.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease';
+  centerEl.style.opacity = '0';
+  centerEl.style.transform = 'scale(0.8)';
 
   function nextIntro() {
       if (introSkipped) return;
       if (step < introPhrases.length) {
-          centerEl.innerText = introPhrases[step]; centerEl.style.color = colors[step]; centerEl.style.transform = 'scale(0.8)'; centerEl.style.opacity = '0'; void centerEl.offsetWidth; 
-          centerEl.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease'; centerEl.style.opacity = '1'; centerEl.style.transform = 'scale(1.1)';
-          introTimeouts.push(setTimeout(() => { if (introSkipped) return; centerEl.style.opacity = '0'; centerEl.style.transform = 'scale(1.4)'; step++; introTimeouts.push(setTimeout(nextIntro, 300)); }, 600)); 
-      } else { startNormalCycle(); }
+          centerEl.innerText = introPhrases[step];
+          centerEl.style.color = colors[step];
+          centerEl.style.transform = 'scale(0.8)';
+          centerEl.style.opacity = '0';
+          void centerEl.offsetWidth; 
+          centerEl.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease';
+          centerEl.style.opacity = '1';
+          centerEl.style.transform = 'scale(1.1)';
+          introTimeouts.push(setTimeout(() => {
+              if (introSkipped) return;
+              centerEl.style.opacity = '0';
+              centerEl.style.transform = 'scale(1.4)';
+              step++;
+              introTimeouts.push(setTimeout(nextIntro, 400));
+          }, 800));
+      } else {
+          startNormalCycle();
+      }
   }
 
   function startNormalCycle() {
       const phrases = ["Welcome", "Place your order seamlessly", "Clock your attendance with ease", "Update your info conveniently"];
-      const normalColors = ["#10b981", "#3b82f6", "#f59e0b", "#ec4899"]; let i = 0;
-      centerEl.style.transition = 'opacity 0.4s ease, color 0.4s ease, transform 0.4s ease'; centerEl.innerText = phrases[i]; centerEl.style.color = normalColors[i]; centerEl.style.transform = 'scale(1)'; centerEl.style.opacity = '1';
-      topEl.classList.add('show'); botEl.classList.add('show');
+      const normalColors = ["#10b981", "#3b82f6", "#f59e0b", "#ec4899"];
+      let i = 0;
+      
+      centerEl.style.transition = 'opacity 0.5s ease, color 0.5s ease, transform 0.5s ease';
+      centerEl.innerText = phrases[i];
+      centerEl.style.color = normalColors[i];
+      centerEl.style.transform = 'scale(1)';
+      centerEl.style.opacity = '1';
+      
+      topEl.classList.add('show');
+      botEl.classList.add('show');
+
       if (window.welcomeCyclerInterval) clearInterval(window.welcomeCyclerInterval);
-      window.welcomeCyclerInterval = setInterval(() => { centerEl.style.opacity = '0'; centerEl.style.transform = 'scale(0.95)'; setTimeout(() => { i = (i + 1) % phrases.length; centerEl.innerText = phrases[i]; centerEl.style.color = normalColors[i]; centerEl.style.transform = 'scale(1)'; centerEl.style.opacity = '1'; }, 400); }, 1800); 
+      window.welcomeCyclerInterval = setInterval(() => {
+          centerEl.style.opacity = '0';
+          centerEl.style.transform = 'scale(0.95)';
+          setTimeout(() => {
+              i = (i + 1) % phrases.length;
+              centerEl.innerText = phrases[i];
+              centerEl.style.color = normalColors[i];
+              centerEl.style.transform = 'scale(1)';
+              centerEl.style.opacity = '1';
+          }, 500); 
+      }, 2800);
   }
-  introTimeouts.push(setTimeout(nextIntro, 150));
+
+  introTimeouts.push(setTimeout(nextIntro, 200));
 }
 
 function updateTime() {
-  const d = new Date(), dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }, timeOptions = { hour: 'numeric', minute: '2-digit' };
-  document.getElementById('welcome-date').innerText = d.toLocaleDateString('en-GB', dateOptions); document.getElementById('welcome-time').innerText = d.toLocaleTimeString('en-US', timeOptions);
+  const d = new Date();
+  const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+  const timeOptions = { hour: 'numeric', minute: '2-digit' };
+  document.getElementById('welcome-date').innerText = d.toLocaleDateString('en-GB', dateOptions);
+  document.getElementById('welcome-time').innerText = d.toLocaleTimeString('en-US', timeOptions);
 }
-function checkNetworkStatus() { const ind = document.getElementById('networkIndicator'); if (ind) navigator.onLine ? ind.classList.remove('offline') : ind.classList.add('offline'); }
 
+function checkNetworkStatus() { 
+  const ind = document.getElementById('networkIndicator'); 
+  if (ind) navigator.onLine ? ind.classList.remove('offline') : ind.classList.add('offline'); 
+}
+
+// SEAMLESS LAYER CROSS-FADING
 function updateBGLayer(targetLayerId) {
-  const layers = document.querySelectorAll('.bg-layer'), target = document.getElementById(targetLayerId);
+  const layers = document.querySelectorAll('.bg-layer');
+  const target = document.getElementById(targetLayerId);
+  
   if (target.classList.contains('active')) return;
-  layers.forEach(layer => { if (layer.classList.contains('active')) { layer.classList.remove('active'); layer.classList.add('previous'); } else if (layer !== target) { layer.classList.remove('previous'); } });
-  target.classList.remove('previous'); void target.offsetWidth; target.classList.add('active'); updateThemeColorMeta();
+
+  layers.forEach(layer => {
+    if (layer.classList.contains('active')) {
+      layer.classList.remove('active');
+      layer.classList.add('previous');
+    } else if (layer !== target) {
+      layer.classList.remove('previous');
+    }
+  });
+
+  target.classList.remove('previous');
+  void target.offsetWidth; // Force reflow to guarantee the CSS transition plays correctly
+  target.classList.add('active');
+  
+  updateThemeColorMeta();
 }
 
 function switchView(viewId) {
   const welcome = document.getElementById('view-welcome');
-  if (viewId === 'view-welcome') { welcome.style.display = 'flex'; welcome.classList.add('active'); } else { welcome.classList.remove('active'); welcome.style.display = 'none'; }
-  document.querySelectorAll('.view-section').forEach(v => { if (v.id === 'view-welcome') return; if (v.id === viewId) { v.style.display = 'flex'; v.classList.remove('active'); void v.offsetWidth; v.classList.add('active'); } else { v.classList.remove('active'); v.style.display = 'none'; } });
+  if (viewId === 'view-welcome') {
+      welcome.style.display = 'flex'; welcome.classList.add('active');
+  } else {
+      welcome.classList.remove('active'); welcome.style.display = 'none';
+  }
+
+  document.querySelectorAll('.view-section').forEach(v => {
+    if (v.id === 'view-welcome') return; 
+    if (v.id === viewId) { 
+      v.style.display = 'flex'; v.classList.remove('active'); void v.offsetWidth; v.classList.add('active'); 
+    } else { 
+      v.classList.remove('active'); v.style.display = 'none'; 
+    }
+  });
 }
 
 function goToMenu(e) {
   if (e) { e.stopPropagation(); e.preventDefault(); }
   if (document.getElementById('view-orders').classList.contains('active') && activeStore) saveOrderState();
   if (document.getElementById('view-attendance').classList.contains('active')) stopCamera();
-  updateBGLayer('layerHub'); document.body.className = ''; switchView('view-menu'); 
+  
+  updateBGLayer('layerHub');
+  document.body.className = '';
+  switchView('view-menu'); 
 }
-function goToWelcome() { updateBGLayer('layerWelcome'); document.body.className = 'theme-welcome'; switchView('view-welcome'); }
-function updatePillSlider(containerId, sliderId) { setTimeout(() => { const ab = document.querySelector(`#${containerId} .pill-btn.active`), sl = document.getElementById(sliderId); if (ab && sl) { sl.style.width = ab.offsetWidth + 'px'; sl.style.left = ab.offsetLeft + 'px'; } }, 50); }
+
+function goToWelcome() { 
+  updateBGLayer('layerWelcome');
+  document.body.className = 'theme-welcome'; 
+  switchView('view-welcome'); 
+}
+
+function updatePillSlider(containerId, sliderId) {
+  setTimeout(() => {
+    const ab = document.querySelector(`#${containerId} .pill-btn.active`);
+    const sl = document.getElementById(sliderId);
+    if (ab && sl) { sl.style.width = ab.offsetWidth + 'px'; sl.style.left = ab.offsetLeft + 'px'; }
+  }, 50);
+}
 
 function fetchPortalDataSilent() {
   ['chandarana', 'carrefour'].forEach(term => {
@@ -465,152 +965,331 @@ function fetchPortalDataSilent() {
 }
 
 // ==========================================
-// SECURE HYBRID CACHE LOGIC
-// ==========================================
-let orderStaffCache = { chandarana: [], carrefour: [] };
-
-function loadSecureLocalCache() {
-  try {
-    const c = Storage.get('order_staff_chandarana'); if(c) orderStaffCache.chandarana = JSON.parse(c);
-    const cr = Storage.get('order_staff_carrefour'); if(cr) orderStaffCache.carrefour = JSON.parse(cr);
-  } catch(e){}
-}
-
-// ==========================================
-// PROFILE LOGIC
+// PROFILE REGISTRATION LOGIC
 // ==========================================
 function openProfile() {
-  switchView('view-profile'); document.body.className = ''; updateBGLayer('layerHub');
-  document.getElementById('profileForm').reset(); document.getElementById('p-step1-fields').style.display = 'none'; document.getElementById('p-step1').style.display = 'block'; document.getElementById('p-step2').style.display = 'none'; document.getElementById('p-step3').style.display = 'none'; document.getElementById('p-staffMsg').innerHTML = '';
+  switchView('view-profile');
   
-  const branchSel = document.getElementById('p-branch'); let chanBranches = [], carrBranches = [];
+  // Set neutral state initially
+  document.body.className = '';
+  updateBGLayer('layerHub');
+  
+  document.getElementById('profileForm').reset();
+  document.getElementById('p-step1-fields').style.display = 'none';
+  document.getElementById('p-step1').style.display = 'block';
+  document.getElementById('p-step2').style.display = 'none';
+  document.getElementById('p-step3').style.display = 'none';
+  document.getElementById('p-staffMsg').innerHTML = '';
+  
+  const branchSel = document.getElementById('p-branch');
+  let chanBranches = [], carrBranches = [];
   try { const pData = JSON.parse(Storage.get('chandarana_portal_data')); if (pData && pData.branches) chanBranches = pData.branches.map(b => b[0]); } catch(e) {}
   try { const pData = JSON.parse(Storage.get('carrefour_portal_data')); if (pData && pData.branches) carrBranches = pData.branches.map(b => b[0]); } catch(e) {}
   
-  let html = `<option value="">Select Branch</option><optgroup label="Chandarana">` + chanBranches.map(b => `<option value="${b}">${b}</option>`).join('') + `</optgroup><optgroup label="Carrefour">` + carrBranches.map(b => `<option value="${b}">${b}</option>`).join('') + `</optgroup>`;
-  branchSel.innerHTML = html; document.getElementById('profileForm').style.display = 'block'; document.getElementById('profileSuccess').style.display = 'none';
+  let html = `<option value="">Select Branch</option>`;
+  html += `<optgroup label="Chandarana">` + chanBranches.map(b => `<option value="${b}">${b}</option>`).join('') + `</optgroup>`;
+  html += `<optgroup label="Carrefour">` + carrBranches.map(b => `<option value="${b}">${b}</option>`).join('') + `</optgroup>`;
+  branchSel.innerHTML = html;
+  
+  document.getElementById('profileForm').style.display = 'block';
+  document.getElementById('profileSuccess').style.display = 'none';
 }
 
 function triggerProfileBranchChange() {
-  const sel = document.getElementById('p-branch'); if(!sel.value) { document.body.className = ''; updateBGLayer('layerHub'); return; }
-  const isChan = sel.options[sel.selectedIndex].parentNode.label === 'Chandarana';
-  document.body.className = isChan ? 'theme-chandarana' : 'theme-carrefour'; updateBGLayer(isChan ? 'layerChandarana' : 'layerCarrefour');
+  const sel = document.getElementById('p-branch');
+  if(!sel.value) {
+      document.body.className = ''; updateBGLayer('layerHub'); return;
+  }
+  const opt = sel.options[sel.selectedIndex];
+  const isChan = opt.parentNode.label === 'Chandarana';
+  document.body.className = isChan ? 'theme-chandarana' : 'theme-carrefour';
+  updateBGLayer(isChan ? 'layerChandarana' : 'layerCarrefour');
 }
+
 function prefillProfileFromLocal(id) {
   const saved = Storage.get('profile_saved_' + id);
-  if(saved) { try { const data = JSON.parse(saved); ['email', 'altContact', 'address', 'nok', 'nokContact', 'bank', 'acc', 'sha', 'nssf', 'kra', 'emp'].forEach(k => { const el = document.getElementById('p-' + k); if(el && data[k]) el.value = data[k]; }); const accConf = document.getElementById('p-acc-confirm'); if(accConf && data['acc']) accConf.value = data['acc']; } catch(e){} }
-}
-
-let profileStaffTimer;
-function instantProfileStaffCheck(val) {
-  val = val.trim(); 
-  const fieldsEl = document.getElementById('p-step1-fields'), msgEl = document.getElementById('p-staffMsg'); 
-  clearTimeout(profileStaffTimer);
-  
-  // LOCK UI INSTANTLY
-  fieldsEl.style.display = 'none'; 
-  
-  if (val.length < 2) { msgEl.innerHTML = ''; return; }
-  
-  let match = orderStaffCache.chandarana.find(s => s.id === val) || orderStaffCache.carrefour.find(s => s.id === val);
-  if (match) { 
-      populateProfileDetails(match, val); 
-  } else {
-    msgEl.innerHTML = '<span class="btn-spinner" style="width:14px;height:14px;"></span> Searching...'; msgEl.className = 'msg';
-    
-    profileStaffTimer = setTimeout(() => {
-        fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'fetchUser', id: val }) })
-        .then(r => r.json()).then(res => {
-            if (document.getElementById('p-id').value.trim() !== val) return;
-            if (res.found) { 
-                orderStaffCache[res.store].push({id: val, name: res.name, phone: res.phone, branch: res.branch}); 
-                Storage.set('order_staff_' + res.store, JSON.stringify(orderStaffCache[res.store])); 
-                populateProfileDetails(res, val); 
-            } else { 
-                fieldsEl.style.display = 'none'; msgEl.innerHTML = 'Invalid ID'; msgEl.className = 'msg error'; 
-            }
-        }).catch(e => { if (document.getElementById('p-id').value.trim() === val) { fieldsEl.style.display = 'none'; msgEl.innerHTML = 'Network Error'; msgEl.className = 'msg error'; } });
-    }, 250); 
+  if(saved) {
+      try {
+          const data = JSON.parse(saved);
+          ['email', 'altContact', 'address', 'nok', 'nokContact', 'bank', 'acc', 'sha', 'nssf', 'kra', 'emp'].forEach(k => {
+              const el = document.getElementById('p-' + k);
+              if(el && data[k]) el.value = data[k];
+          });
+          const accConf = document.getElementById('p-acc-confirm');
+          if(accConf && data['acc']) accConf.value = data['acc'];
+      } catch(e){}
   }
 }
-function populateProfileDetails(match, val) {
-    document.getElementById('p-step1-fields').style.display = 'block'; document.getElementById('p-name').value = match.name; document.getElementById('p-phone').value = match.phone;
-    const branchSel = document.getElementById('p-branch'); let bMatch = Array.from(branchSel.options).find(o => o.value === match.branch); if(bMatch) branchSel.value = match.branch;
-    const msgEl = document.getElementById('p-staffMsg'); msgEl.innerHTML = `<span class="dot"></span> ID valid, details fetched.`; msgEl.className = 'msg success';
-    triggerProfileBranchChange(); prefillProfileFromLocal(val);
+
+function instantProfileStaffCheck(val) {
+  val = val.trim();
+  const fieldsEl = document.getElementById('p-step1-fields');
+  const msgEl = document.getElementById('p-staffMsg');
+
+  // Collapse if backspaced below 2 chars but allow verification of shorter valid IDs
+  if (val.length < 2) { 
+    fieldsEl.style.display = 'none';
+    msgEl.innerHTML = ''; 
+    return; 
+  }
+  
+  let match = orderStaffCache.chandarana.find(s => s.id === val) || orderStaffCache.carrefour.find(s => s.id === val);
+  
+  if (match) {
+    fieldsEl.style.display = 'block';
+    document.getElementById('p-name').value = match.name;
+    document.getElementById('p-phone').value = match.phone;
+    
+    const branchSel = document.getElementById('p-branch');
+    let bMatch = Array.from(branchSel.options).find(o => o.value === match.branch);
+    if(bMatch) branchSel.value = match.branch;
+    
+    msgEl.innerHTML = `<span class="dot"></span> ID valid, details fetched.`; 
+    msgEl.className = 'msg success';
+    triggerProfileBranchChange();
+    prefillProfileFromLocal(val);
+  } else {
+    fieldsEl.style.display = 'none';
+    msgEl.innerHTML = 'Invalid ID';
+    msgEl.className = 'msg error';
+  }
 }
 
-function showStepError(id) { const el = document.getElementById(id); el.style.borderColor = 'var(--error-color)'; setTimeout(() => { el.style.borderColor = ''; }, 2000); }
+function showStepError(id) {
+    const el = document.getElementById(id);
+    el.style.borderColor = 'var(--error-color)';
+    setTimeout(() => { el.style.borderColor = ''; }, 2000);
+}
+
 function validateProfileStep(step) {
-    if(step === 1) { const req = ['p-id', 'p-name', 'p-phone', 'p-branch']; for(let id of req) { if(!document.getElementById(id).value.trim()) { showStepError(id); return false; } } }
-    if(step === 2) { const req = ['p-email', 'p-altContact', 'p-address', 'p-nok', 'p-nokContact']; for(let id of req) { if(!document.getElementById(id).value.trim()) { showStepError(id); return false; } } }
+    if(step === 1) {
+        const req = ['p-id', 'p-name', 'p-phone', 'p-branch'];
+        for(let id of req) { if(!document.getElementById(id).value.trim()) { showStepError(id); return false; } }
+    }
+    if(step === 2) {
+        const req = ['p-email', 'p-altContact', 'p-address', 'p-nok', 'p-nokContact'];
+        for(let id of req) { if(!document.getElementById(id).value.trim()) { showStepError(id); return false; } }
+    }
     return true;
 }
-function nextProfileStep(n) { if(!validateProfileStep(n-1)) return; document.getElementById('p-step' + (n-1)).style.display = 'none'; const nextStep = document.getElementById('p-step' + n); nextStep.style.display = 'block'; nextStep.style.animation = 'sectionFadeIn 0.4s ease forwards'; }
-function prevProfileStep(n) { document.getElementById('p-step' + (n+1)).style.display = 'none'; const prevStep = document.getElementById('p-step' + n); prevStep.style.display = 'block'; prevStep.style.animation = 'sectionFadeIn 0.4s ease forwards'; }
+
+function nextProfileStep(n) {
+    if(!validateProfileStep(n-1)) return;
+    document.getElementById('p-step' + (n-1)).style.display = 'none';
+    const nextStep = document.getElementById('p-step' + n);
+    nextStep.style.display = 'block';
+    nextStep.style.animation = 'sectionFadeIn 0.4s ease forwards';
+}
+
+function prevProfileStep(n) {
+    document.getElementById('p-step' + (n+1)).style.display = 'none';
+    const prevStep = document.getElementById('p-step' + n);
+    prevStep.style.display = 'block';
+    prevStep.style.animation = 'sectionFadeIn 0.4s ease forwards';
+}
 
 let pendingProfilePayload = null;
+
 function reviewProfile(e) {
-  e.preventDefault(); const acc = document.getElementById('p-acc').value, accConfirm = document.getElementById('p-acc-confirm').value;
-  if (acc !== accConfirm) { document.getElementById('p-accMsg').innerHTML = 'Account Numbers do not match!'; document.getElementById('p-accMsg').className = 'msg error'; return; }
+  e.preventDefault();
+  const acc = document.getElementById('p-acc').value;
+  const accConfirm = document.getElementById('p-acc-confirm').value;
+  
+  if (acc !== accConfirm) {
+    document.getElementById('p-accMsg').innerHTML = 'Account Numbers do not match!';
+    document.getElementById('p-accMsg').className = 'msg error';
+    return;
+  }
   document.getElementById('p-accMsg').innerHTML = '';
   
-  pendingProfilePayload = { id: document.getElementById('p-id').value, name: document.getElementById('p-name').value, phone: document.getElementById('p-phone').value, branch: document.getElementById('p-branch').value, email: document.getElementById('p-email').value, altContact: document.getElementById('p-altContact').value, address: document.getElementById('p-address').value, nok: document.getElementById('p-nok').value, nokContact: document.getElementById('p-nokContact').value, bank: document.getElementById('p-bank').value, acc: acc, sha: document.getElementById('p-sha').value, nssf: document.getElementById('p-nssf').value, kra: document.getElementById('p-kra').value, empDate: document.getElementById('p-emp').value };
-  const p = pendingProfilePayload; const makeRow = (label, value, step) => `<div class="profile-summary-item" onclick="editProfileStep(${step})"><div><strong>${label}</strong><span>${value || '-'}</span></div><div class="edit-icon">✏️</div></div>`;
-  let html = makeRow('ID Number', p.id, 1) + makeRow('Full Name', p.name, 1) + makeRow('Phone', p.phone, 1) + makeRow('Default Branch', p.branch, 1) + makeRow('Email', p.email, 2) + makeRow('Alt Contact', p.altContact, 2) + makeRow('Physical Address', p.address, 2) + makeRow('Next of Kin', p.nok, 2) + makeRow('NOK Contact', p.nokContact, 2) + makeRow('Bank Name', p.bank, 3) + makeRow('Account Number', p.acc, 3) + makeRow('SHA Number', p.sha, 3) + makeRow('NSSF Number', p.nssf, 3) + makeRow('KRA PIN', p.kra, 3) + makeRow('Emp. Date', p.empDate, 3);
-  document.getElementById('profileSummaryDetails').innerHTML = html; document.getElementById('profileConfirmModal').style.display = 'flex';
+  pendingProfilePayload = {
+    id: document.getElementById('p-id').value,
+    name: document.getElementById('p-name').value,
+    phone: document.getElementById('p-phone').value,
+    branch: document.getElementById('p-branch').value,
+    email: document.getElementById('p-email').value,
+    altContact: document.getElementById('p-altContact').value,
+    address: document.getElementById('p-address').value,
+    nok: document.getElementById('p-nok').value,
+    nokContact: document.getElementById('p-nokContact').value,
+    bank: document.getElementById('p-bank').value,
+    acc: acc,
+    sha: document.getElementById('p-sha').value,
+    nssf: document.getElementById('p-nssf').value,
+    kra: document.getElementById('p-kra').value,
+    empDate: document.getElementById('p-emp').value
+  };
+
+  const p = pendingProfilePayload;
+
+  // Helper generator to format rows that jump to specific steps when tapped
+  const makeRow = (label, value, step) => `
+    <div class="profile-summary-item" onclick="editProfileStep(${step})">
+      <div>
+        <strong>${label}</strong>
+        <span>${value || '-'}</span>
+      </div>
+      <div class="edit-icon">✏️</div>
+    </div>
+  `;
+
+  let html = '';
+  // Step 1 mappings
+  html += makeRow('ID Number', p.id, 1);
+  html += makeRow('Full Name', p.name, 1);
+  html += makeRow('Phone', p.phone, 1);
+  html += makeRow('Default Branch', p.branch, 1);
+  
+  // Step 2 mappings
+  html += makeRow('Email', p.email, 2);
+  html += makeRow('Alt Contact', p.altContact, 2);
+  html += makeRow('Physical Address', p.address, 2);
+  html += makeRow('Next of Kin', p.nok, 2);
+  html += makeRow('NOK Contact', p.nokContact, 2);
+  
+  // Step 3 mappings
+  html += makeRow('Bank Name', p.bank, 3);
+  html += makeRow('Account Number', p.acc, 3);
+  html += makeRow('SHA Number', p.sha, 3);
+  html += makeRow('NSSF Number', p.nssf, 3);
+  html += makeRow('KRA PIN', p.kra, 3);
+  html += makeRow('Emp. Date', p.empDate, 3);
+
+  document.getElementById('profileSummaryDetails').innerHTML = html;
+  document.getElementById('profileConfirmModal').style.display = 'flex';
 }
-function editProfileStep(targetStepNum) { document.getElementById('profileConfirmModal').style.display = 'none'; document.getElementById('p-step1').style.display = 'none'; document.getElementById('p-step2').style.display = 'none'; document.getElementById('p-step3').style.display = 'none'; const targetStep = document.getElementById('p-step' + targetStepNum); targetStep.style.display = 'block'; targetStep.style.animation = 'sectionFadeIn 0.4s ease forwards'; }
+
+function editProfileStep(targetStepNum) {
+  // Hide the modal
+  document.getElementById('profileConfirmModal').style.display = 'none';
+  
+  // Hide all steps
+  document.getElementById('p-step1').style.display = 'none';
+  document.getElementById('p-step2').style.display = 'none';
+  document.getElementById('p-step3').style.display = 'none';
+  
+  // Display the target step tapped by the user
+  const targetStep = document.getElementById('p-step' + targetStepNum);
+  targetStep.style.display = 'block';
+  targetStep.style.animation = 'sectionFadeIn 0.4s ease forwards';
+}
 
 async function confirmAndSendProfile() {
-  const btn = document.getElementById('confirmProfileSendBtn'); const payload = pendingProfilePayload;
+  const btn = document.getElementById('confirmProfileSendBtn');
+  const payload = pendingProfilePayload;
+  
+  // Smart Skip logic if nothing changed
   const prevStr = Storage.get('profile_saved_' + payload.id);
-  if (prevStr && prevStr === JSON.stringify(payload)) { document.getElementById('profileConfirmModal').style.display = 'none'; document.getElementById('profileForm').style.display = 'none'; document.getElementById('profileSuccess').style.display = 'block'; document.getElementById('profileSuccessText').innerText = "You already updated your profile."; return; }
+  if (prevStr && prevStr === JSON.stringify(payload)) {
+    document.getElementById('profileConfirmModal').style.display = 'none';
+    document.getElementById('profileForm').style.display = 'none';
+    document.getElementById('profileSuccess').style.display = 'block';
+    document.getElementById('profileSuccessText').innerText = "You already updated your profile.";
+    return;
+  }
+
   btn.disabled = true; btn.innerHTML = '<span class="btn-spinner"></span> Saving...';
+  
   try {
     const res = await (await fetch(SCRIPT_URL, { method: "POST", headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'saveProfile', data: payload }) })).json();
     if (!res.ok) throw new Error(res.error);
-    Storage.set('profile_saved_' + payload.id, JSON.stringify(payload)); document.getElementById('profileConfirmModal').style.display = 'none'; document.getElementById('profileForm').style.display = 'none'; document.getElementById('profileSuccess').style.display = 'block'; document.getElementById('profileSuccessText').innerText = "Profile Saved!";
-  } catch(err) { alert("Error saving profile: " + err.message); }
+    
+    Storage.set('profile_saved_' + payload.id, JSON.stringify(payload));
+    document.getElementById('profileConfirmModal').style.display = 'none';
+    document.getElementById('profileForm').style.display = 'none';
+    document.getElementById('profileSuccess').style.display = 'block';
+    document.getElementById('profileSuccessText').innerText = "Profile Saved!";
+  } catch(err) {
+    alert("Error saving profile: " + err.message);
+  }
   btn.disabled = false; btn.innerText = 'Submit';
 }
 
 // ==========================================
-// ORDER LOGIC
+// ORDER SYSTEM LOGIC
 // ==========================================
+let orderStaffCache = { chandarana: [], carrefour: [] }; 
 let currentOrderStaffFullname = "";
 let orderState = { chandarana: { juices: {}, fresh: [], bottles: [], haccp: [] }, carrefour: { juices: {}, fresh: [], bottles: [], haccp: [] } };
 let orderStoreState = { chandarana: { id: '' }, carrefour: { id: '' } }; 
 
 function openOrder() {
   document.getElementById('orderTopBar').style.display = 'flex'; document.getElementById('orderSuccessScreen').style.display = 'none';
-  let savedTerminal = Storage.get('selected_terminal'); switchView('view-orders'); 
-  if (savedTerminal) { switchTerminalOrder(savedTerminal); } else { activeStore = null; document.body.className = ''; updateBGLayer('layerHub'); document.getElementById('orderFormInner').style.display = 'none'; document.getElementById('o-pill-slider').style.width = '0'; document.getElementById('o-btn-chandarana').classList.remove('active'); document.getElementById('o-btn-carrefour').classList.remove('active'); }
+  let savedTerminal = Storage.get('selected_terminal');
+  switchView('view-orders'); 
+  
+  if (savedTerminal) {
+      switchTerminalOrder(savedTerminal);
+  } else {
+      activeStore = null;
+      document.body.className = '';
+      updateBGLayer('layerHub');
+      document.getElementById('orderFormInner').style.display = 'none';
+      document.getElementById('o-pill-slider').style.width = '0';
+      document.getElementById('o-btn-chandarana').classList.remove('active');
+      document.getElementById('o-btn-carrefour').classList.remove('active');
+  }
 }
-function switchTerminalOrder(store) {
-  if (activeStore) { orderStoreState[activeStore].id = document.getElementById('o-id').value; saveOrderState(); }
-  activeStore = store; Storage.set('selected_terminal', store);
-  document.body.className = store === 'chandarana' ? 'theme-chandarana' : 'theme-carrefour'; updateBGLayer(store === 'chandarana' ? 'layerChandarana' : 'layerCarrefour');
-  document.getElementById('o-btn-chandarana').classList.toggle('active', store === 'chandarana'); document.getElementById('o-btn-carrefour').classList.toggle('active', store === 'carrefour'); updatePillSlider('o-terminal-wrapper', 'o-pill-slider'); document.getElementById('orderFormInner').style.display = 'block';
-  renderDynamicOrderContent(); restoreOrderState(); let savedId = orderStoreState[store].id || Storage.get('last_order_id_' + store) || ''; document.getElementById('o-id').value = savedId; instantOrderStaffCheck(savedId);
+
+function switchTerminalOrder(store, preventCheck = false) {
+  if (activeStore && activeStore !== store) { orderStoreState[activeStore].id = document.getElementById('o-id').value; saveOrderState(); }
+  activeStore = store; 
+  Storage.set('selected_terminal', store);
+  
+  document.body.className = store === 'chandarana' ? 'theme-chandarana' : 'theme-carrefour';
+  updateBGLayer(store === 'chandarana' ? 'layerChandarana' : 'layerCarrefour');
+  
+  document.getElementById('o-btn-chandarana').classList.toggle('active', store === 'chandarana'); document.getElementById('o-btn-carrefour').classList.toggle('active', store === 'carrefour');
+  updatePillSlider('o-terminal-wrapper', 'o-pill-slider'); 
+  document.getElementById('orderFormInner').style.display = 'block';
+
+  renderDynamicOrderContent(); restoreOrderState();
+  if (!preventCheck) {
+    let currentId = document.getElementById('o-id').value;
+    let savedId = currentId || orderStoreState[store].id || Storage.get('last_order_id_' + store) || '';
+    document.getElementById('o-id').value = savedId;
+    instantOrderStaffCheck(savedId, store);
+  }
+}
+
+function loadOrderStaffBackground() {
+  purgeCacheAtMidnight();
+  const cachedChan = Storage.get('order_staff_chandarana');
+  const cachedCarr = Storage.get('order_staff_carrefour');
+  if (cachedChan && cachedCarr) { orderStaffCache.chandarana = JSON.parse(cachedChan); orderStaffCache.carrefour = JSON.parse(cachedCarr); }
+  
+  fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'getOrderStaff' }) })
+    .then(r => r.json()).then(res => { 
+        if(res.ok) { orderStaffCache = res.data; Storage.set('order_staff_chandarana', JSON.stringify(res.data.chandarana)); Storage.set('order_staff_carrefour', JSON.stringify(res.data.carrefour)); } 
+    }).catch(e => {});
 }
 
 let branchHoldTimer;
 function startBranchHold(e) { if (e.type === 'mousedown' && e.button !== 0) return; branchHoldTimer = setTimeout(() => { unlockBranchSelect(); if(navigator.vibrate) navigator.vibrate(50); }, 600); }
 function cancelBranchHold() { clearTimeout(branchHoldTimer); }
+
 function lockBranchSelect(isAttendanceVerified) {
-  const sel = document.getElementById('o-branch'), overlay = document.getElementById('o-branch-overlay'), icon = document.getElementById('o-branch-lock-icon'); sel.style.pointerEvents = 'none'; sel.style.appearance = 'none'; sel.style.color = 'var(--dynamic-primary)'; sel.style.fontWeight = '900';
-  if (isAttendanceVerified) { icon.style.display = 'none'; overlay.style.display = 'none'; sel.style.background = 'transparent'; sel.style.borderColor = 'transparent'; } else { icon.style.display = 'inline'; icon.innerText = '🔒 Hold to edit'; overlay.style.display = 'block'; sel.style.background = 'var(--input-bg)'; sel.style.borderColor = 'var(--input-border)'; }
+  const sel = document.getElementById('o-branch'), overlay = document.getElementById('o-branch-overlay'), icon = document.getElementById('o-branch-lock-icon');
+  sel.style.pointerEvents = 'none'; sel.style.appearance = 'none'; sel.style.color = 'var(--dynamic-primary)'; sel.style.fontWeight = '900';
+  if (isAttendanceVerified) { icon.style.display = 'none'; overlay.style.display = 'none'; sel.style.background = 'transparent'; sel.style.borderColor = 'transparent';
+  } else { icon.style.display = 'inline'; icon.innerText = '🔒 Hold to edit'; overlay.style.display = 'block'; sel.style.background = 'var(--input-bg)'; sel.style.borderColor = 'var(--input-border)'; }
 }
+
 function unlockBranchSelect() {
-  const sel = document.getElementById('o-branch'), overlay = document.getElementById('o-branch-overlay'), icon = document.getElementById('o-branch-lock-icon'); sel.style.pointerEvents = 'auto'; sel.style.appearance = 'auto'; sel.style.color = 'var(--dynamic-primary)'; sel.style.fontWeight = '900'; overlay.style.display = 'none'; icon.style.display = 'inline'; icon.innerText = '🔓 Select below'; sel.style.background = 'var(--input-bg)'; sel.style.borderColor = 'var(--input-border)';
+  const sel = document.getElementById('o-branch'), overlay = document.getElementById('o-branch-overlay'), icon = document.getElementById('o-branch-lock-icon');
+  sel.style.pointerEvents = 'auto'; sel.style.appearance = 'auto'; sel.style.color = 'var(--dynamic-primary)'; sel.style.fontWeight = '900'; overlay.style.display = 'none'; icon.style.display = 'inline'; icon.innerText = '🔓 Select below'; sel.style.background = 'var(--input-bg)'; sel.style.borderColor = 'var(--input-border)';
 }
+
 function populateOrderBranches() {
    const sel = document.getElementById('o-branch'); let chanBranches = [], carrBranches = [];
    try { const pData = JSON.parse(Storage.get('chandarana_portal_data')); if (pData && pData.branches) chanBranches = pData.branches.map(b => b[0]); } catch(e) {}
    try { const pData = JSON.parse(Storage.get('carrefour_portal_data')); if (pData && pData.branches) carrBranches = pData.branches.map(b => b[0]); } catch(e) {}
-   let html = `<optgroup label="Chandarana" style="color: var(--theme-chan); font-weight: 900;">` + chanBranches.map(b => `<option value="${b}" data-store="chandarana" style="color: var(--text-primary); font-weight: 700;">${b}</option>`).join('') + `</optgroup><optgroup label="Carrefour" style="color: var(--theme-carr); font-weight: 900;">` + carrBranches.map(b => `<option value="${b}" data-store="carrefour" style="color: var(--text-primary); font-weight: 700;">${b}</option>`).join('') + `</optgroup>`; sel.innerHTML = html;
+   
+   let html = `<optgroup label="Chandarana" style="color: var(--theme-chan); font-weight: 900;">` + chanBranches.map(b => `<option value="${b}" data-store="chandarana" style="color: var(--text-primary); font-weight: 700;">${b}</option>`).join('') + `</optgroup>`;
+   html += `<optgroup label="Carrefour" style="color: var(--theme-carr); font-weight: 900;">` + carrBranches.map(b => `<option value="${b}" data-store="carrefour" style="color: var(--text-primary); font-weight: 700;">${b}</option>`).join('') + `</optgroup>`;
+   sel.innerHTML = html;
 }
+
 document.getElementById('o-branch').addEventListener('change', function(e) {
   const opt = this.options[this.selectedIndex], selectedStore = opt.getAttribute('data-store'), selectedBranch = this.value, currentId = document.getElementById('o-id').value;
   if (selectedStore && selectedStore !== activeStore) instantOrderStaffCheck(currentId, selectedStore, selectedBranch);
@@ -618,16 +1297,21 @@ document.getElementById('o-branch').addEventListener('change', function(e) {
 
 function processStaffMatch(val, match, defaultStore, forcedStore, forcedBranch) {
   let isAttendanceVerified = false, targetStore = defaultStore, targetBranch = match.branch, relievedMsg = '';
-  if (match.attStatus === 'Clock In' && match.lastTime) {
-      const d = new Date(match.lastTime), now = new Date(); 
-      if (d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) { 
-          targetStore = match.store; targetBranch = match.attBranch; isAttendanceVerified = true; 
-          if (targetStore !== defaultStore || targetBranch !== match.branch) relievedMsg = ' (Auto-detected)';
-      }
-  }
+  let latestClockInTime = 0, clockedInStore = null, clockedInBranch = null;
 
+  ['chandarana', 'carrefour'].forEach(store => {
+    try {
+      const pData = JSON.parse(Storage.get(store + '_portal_data'));
+      const s = pData?.staff?.find(x => x.id === val);
+      if (s && s.lastTime) { const d = new Date(s.lastTime), now = new Date(); if (d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) { if (s.lastTime > latestClockInTime) { latestClockInTime = s.lastTime; clockedInStore = store; clockedInBranch = s.branch; } } }
+    } catch(e) {}
+  });
+
+  if (clockedInStore && clockedInBranch) { targetStore = clockedInStore; targetBranch = clockedInBranch; isAttendanceVerified = true; if (targetStore !== defaultStore || targetBranch !== match.branch) relievedMsg = ' (Auto-detected)'; }
   if (forcedBranch && forcedStore) { targetStore = forcedStore; targetBranch = forcedBranch; isAttendanceVerified = false; relievedMsg = ''; }
-  if (targetStore !== activeStore) { switchTerminalOrder(targetStore); }
+
+  // FIX: Prevent UI infinite bounce-backs between shops when manually overriding branch dropdowns
+  if (targetStore !== activeStore) { switchTerminalOrder(targetStore, true); }
 
   Storage.set('last_order_id_' + activeStore, val); 
   const msgDiv = document.getElementById('o-staffMsg'), nameInp = document.getElementById('o-name'), nameCont = document.getElementById('o-name-container'), expFields = document.getElementById('o-expanded-fields'), lockedSec = document.getElementById('o-locked-section');
@@ -641,58 +1325,60 @@ function processStaffMatch(val, match, defaultStore, forcedStore, forcedBranch) 
   msgDiv.innerHTML = `<span class="dot"></span> ID Verified${relievedMsg}`; msgDiv.className = 'msg success'; 
 }
 
-let orderStaffTimer;
 function instantOrderStaffCheck(val, forcedStore = null, forcedBranch = null) {
   val = val.trim(); 
   const msgDiv = document.getElementById('o-staffMsg'), nameCont = document.getElementById('o-name-container'), nameInp = document.getElementById('o-name'), expFields = document.getElementById('o-expanded-fields'), lockedSec = document.getElementById('o-locked-section');
-  clearTimeout(orderStaffTimer);
   
-  // LOCK UI INSTANTLY
-  nameCont.style.opacity = '0'; expFields.style.display = 'none'; lockedSec.classList.remove('unlocked');
-  
-  if(val.length < 2) { msgDiv.innerHTML = ''; nameInp.value = ''; currentOrderStaffFullname = ''; document.getElementById('o-branch').innerHTML = ''; document.getElementById('o-phone').value = ''; if(activeStore) Storage.remove('last_order_id_' + activeStore); return; }
+  if(val.length < 2) { msgDiv.innerHTML = ''; nameInp.value = ''; currentOrderStaffFullname = ''; document.getElementById('o-branch').innerHTML = ''; document.getElementById('o-phone').value = ''; nameCont.style.opacity = '0'; expFields.style.display='none'; lockedSec.classList.remove('unlocked'); if(activeStore) Storage.remove('last_order_id_' + activeStore); return; }
 
   let match = orderStaffCache.chandarana.find(s => s.id === val); let defaultStore = match ? 'chandarana' : null;
   if (!match) { match = orderStaffCache.carrefour.find(s => s.id === val); if (match) defaultStore = 'carrefour'; }
   
-  if(match) { 
-      processStaffMatch(val, match, defaultStore, forcedStore, forcedBranch); 
-  } else { 
-    msgDiv.innerHTML = '<span class="btn-spinner" style="width:14px;height:14px;"></span> Searching...'; msgDiv.className = 'msg';
-    
-    orderStaffTimer = setTimeout(() => {
-        fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'fetchUser', id: val }) })
-        .then(r => r.json()).then(res => {
-           if (document.getElementById('o-id').value.trim() !== val) return;
-           if (res.found) { 
-               orderStaffCache[res.store].push({id: val, name: res.name, phone: res.phone, branch: res.branch, attStatus: res.attStatus, lastTime: res.lastTime, attBranch: res.attBranch}); 
-               Storage.set('order_staff_' + res.store, JSON.stringify(orderStaffCache[res.store])); 
-               processStaffMatch(val, orderStaffCache[res.store][orderStaffCache[res.store].length-1], res.store, forcedStore, forcedBranch); 
-           } else { 
-               msgDiv.innerHTML = 'Invalid ID'; msgDiv.className = 'msg error'; 
-           }
-        }).catch(e => { if (document.getElementById('o-id').value.trim() === val) { msgDiv.innerHTML = 'Network Error'; msgDiv.className = 'msg error'; } });
-    }, 250); 
+  if(match) { processStaffMatch(val, match, defaultStore, forcedStore, forcedBranch); } 
+  else { 
+    msgDiv.innerHTML = '<span class="btn-spinner" style="width:14px;height:14px;"></span> Searching...'; msgDiv.className = 'msg'; nameCont.style.opacity = '0'; expFields.style.display='none'; lockedSec.classList.remove('unlocked');
+    fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'fetchUser', id: val }) })
+    .then(r => r.json()).then(res => {
+       if (document.getElementById('o-id').value.trim() !== val) return;
+       if (res.found) { orderStaffCache[res.store].push({id: val, name: res.name, phone: res.phone, branch: res.branch}); processStaffMatch(val, {name: res.name, phone: res.phone, branch: res.branch}, res.store, forcedStore, forcedBranch); } else { msgDiv.innerHTML = 'Invalid ID'; msgDiv.className = 'msg error'; }
+    }).catch(e => { if (document.getElementById('o-id').value.trim() === val) { msgDiv.innerHTML = 'Network Error'; msgDiv.className = 'msg error'; } });
   }
 }
 
 const JUICES = { chandarana: ["ORANGE", "TROPICAL MIX", "MANGO", "PASSION", "APPLE GINGER", "TREE TOMATO", "PINEAPPLE MINT", "LIME & GINGER", "APPLEJUICE", "LIMEJUICE", "HIBISCUS", "TAMARIND", "ALOE VERA", "BEETROOT", "TANGERINE", "GINGER PLAIN", "CARROT"], carrefour: ["ORANGE", "TROPICAL MIX", "MANGO", "PASSION", "APPLE GINGER", "TREE TOMATO", "PINEAPPLE MINT", "LIME & GINGER", "TAMARIND", "CARROT", "BEETROOT"] };
+
 function handleJuiceTouch(e, step) {
   const el = e.currentTarget;
   if (e.type === 'touchmove') { el.hasScrolled = true; clearTimeout(el.pressTimer); return; }
-  if (e.type === 'touchstart' || e.type === 'mousedown') { if (e.type === 'touchstart') el.ignoreMouse = true; if (e.type === 'mousedown' && el.ignoreMouse) return; el.hasScrolled = false; el.isLong = false; clearTimeout(el.pressTimer); el.pressTimer = setTimeout(() => { el.isLong = true; if(navigator.vibrate) navigator.vibrate(50); el.setAttribute('data-val', "0"); el.innerText = '-'; el.classList.remove('has-value'); }, 400);
+  if (e.type === 'touchstart' || e.type === 'mousedown') {
+    if (e.type === 'touchstart') el.ignoreMouse = true; if (e.type === 'mousedown' && el.ignoreMouse) return;
+    el.hasScrolled = false; el.isLong = false; clearTimeout(el.pressTimer);
+    el.pressTimer = setTimeout(() => { el.isLong = true; if(navigator.vibrate) navigator.vibrate(50); el.setAttribute('data-val', "0"); el.innerText = '-'; el.classList.remove('has-value'); }, 400);
   } else if (e.type === 'touchend' || e.type === 'mouseup') {
     if (e.type === 'mouseup' && el.ignoreMouse) { setTimeout(() => el.ignoreMouse = false, 300); return; }
     clearTimeout(el.pressTimer); if (el.hasScrolled) return; if (e.cancelable && e.type === 'touchend') e.preventDefault();
-    if(!el.isLong) { let currentVal = parseInt(el.getAttribute('data-val')) || 0; currentVal += step; if(currentVal > 60) currentVal = 0; el.setAttribute('data-val', currentVal); el.innerText = currentVal === 0 ? '-' : currentVal; el.classList.toggle('has-value', currentVal > 0); const flavor = el.getAttribute('data-flavor'), vol = el.getAttribute('data-vol'), otherVol = vol === '5L' ? '3L' : '5L'; const otherEl = document.querySelector(`.juice-input[data-flavor="${flavor}"][data-vol="${otherVol}"]`); if (currentVal > 0 && otherEl && parseInt(otherEl.getAttribute('data-val')) > 0) { otherEl.setAttribute('data-val', "0"); otherEl.innerText = '-'; otherEl.classList.remove('has-value'); } }
+
+    if(!el.isLong) {
+      let currentVal = parseInt(el.getAttribute('data-val')) || 0; currentVal += step; if(currentVal > 60) currentVal = 0;
+      el.setAttribute('data-val', currentVal); el.innerText = currentVal === 0 ? '-' : currentVal; el.classList.toggle('has-value', currentVal > 0);
+      const flavor = el.getAttribute('data-flavor'), vol = el.getAttribute('data-vol'), otherVol = vol === '5L' ? '3L' : '5L';
+      const otherEl = document.querySelector(`.juice-input[data-flavor="${flavor}"][data-vol="${otherVol}"]`);
+      if (currentVal > 0 && otherEl && parseInt(otherEl.getAttribute('data-val')) > 0) { otherEl.setAttribute('data-val', "0"); otherEl.innerText = '-'; otherEl.classList.remove('has-value'); }
+    }
   } else { clearTimeout(el.pressTimer); }
 }
 
 function renderDynamicOrderContent() {
   if (!activeStore) return;
   let html = `<details class="order-group"><summary class="order-group-title">Juice Flavors</summary><div class="order-group-content" style="padding:0; border-top:none;"><div style="overflow-x:auto;"><table><thead><tr><th>Flavor</th><th>5 Litres</th><th>3 Litres</th></tr></thead><tbody>`;
-  JUICES[activeStore].forEach(flavor => { html += `<tr><td class="flavor-name">${flavor}</td>`; ["5L", "3L"].forEach(v => { html += `<td><div class="square-input juice-input" data-flavor="${flavor}" data-vol="${v}" data-val="0" ontouchstart="handleJuiceTouch(event, ${parseInt(v)})" ontouchmove="handleJuiceTouch(event, 0)" ontouchend="handleJuiceTouch(event, ${parseInt(v)})" ontouchcancel="handleJuiceTouch(event, 0)" onmousedown="handleJuiceTouch(event, ${parseInt(v)})" onmouseup="handleJuiceTouch(event, ${parseInt(v)})" onmouseleave="handleJuiceTouch(event, 0)">-</div></td>`; }); html += `</tr>`; }); 
-  html += `</tbody></table></div><div style="font-size:11px; color:var(--text-tertiary); text-align:center; margin:12px 0 8px; font-weight: 800;">Tap and hold a box to delete selection</div></div></details><details class="order-group"><summary class="order-group-title">Fresh Inputs</summary><div class="order-group-content"><div class="chip-group">`;
+  JUICES[activeStore].forEach(flavor => { 
+    html += `<tr><td class="flavor-name">${flavor}</td>`; 
+    ["5L", "3L"].forEach(v => { html += `<td><div class="square-input juice-input" data-flavor="${flavor}" data-vol="${v}" data-val="0" ontouchstart="handleJuiceTouch(event, ${parseInt(v)})" ontouchmove="handleJuiceTouch(event, 0)" ontouchend="handleJuiceTouch(event, ${parseInt(v)})" ontouchcancel="handleJuiceTouch(event, 0)" onmousedown="handleJuiceTouch(event, ${parseInt(v)})" onmouseup="handleJuiceTouch(event, ${parseInt(v)})" onmouseleave="handleJuiceTouch(event, 0)">-</div></td>`; }); 
+    html += `</tr>`; 
+  }); 
+  html += `</tbody></table></div><div style="font-size:11px; color:var(--text-tertiary); text-align:center; margin:12px 0 8px; font-weight: 800;">Tap and hold a box to delete selection</div></div></details>`;
+  
+  html += `<details class="order-group"><summary class="order-group-title">Fresh Inputs</summary><div class="order-group-content"><div class="chip-group">`;
   if(activeStore === 'chandarana') { html += `<label class="chip-label"><input type="checkbox" class="inp-fresh" value="Ginger"><span class="chip-span">Ginger</span></label><label class="chip-label"><input type="checkbox" class="inp-fresh" value="Lime"><span class="chip-span">Lime</span></label><label class="chip-label"><input type="radio" name="sg" class="inp-fresh" value="Sugarcane (Full)"><span class="chip-span">Sugarcane (Full)</span></label><label class="chip-label"><input type="radio" name="sg" class="inp-fresh" value="Sugarcane (Half)"><span class="chip-span">Sugarcane (Half)</span></label>`; } else { html += `<label class="chip-label"><input type="checkbox" class="inp-fresh" value="Sugarcane"><span class="chip-span">Sugarcane</span></label><label class="chip-label"><input type="checkbox" class="inp-fresh" value="Ginger"><span class="chip-span">Ginger</span></label><label class="chip-label"><input type="checkbox" class="inp-fresh" value="Lime"><span class="chip-span">Lime</span></label>`; }
   html += `</div></div></details><details class="order-group"><summary class="order-group-title">Bottles</summary><div class="order-group-content"><div class="chip-group"><label class="chip-label"><input type="checkbox" class="inp-bottle" value="1 Litre"><span class="chip-span">1 Litre</span></label><label class="chip-label"><input type="checkbox" class="inp-bottle" value="500ml"><span class="chip-span">500ml</span></label>`;
   if(activeStore === 'carrefour') html += `<label class="chip-label"><input type="checkbox" class="inp-bottle" value="250ml"><span class="chip-span">250ml</span></label>`;
@@ -700,6 +1386,7 @@ function renderDynamicOrderContent() {
   if(activeStore === 'chandarana') html += `<label class="chip-label"><input type="checkbox" class="inp-haccp" value="Gloves"><span class="chip-span">Gloves</span></label><label class="chip-label"><input type="checkbox" class="inp-haccp" value="Hairnets"><span class="chip-span">Hairnets</span></label><label class="chip-label"><input type="checkbox" class="inp-haccp" value="Towels"><span class="chip-span">Towels</span></label>`;
   html += `</div></div></details>`; document.getElementById('dynamicOrderContent').innerHTML = html;
 }
+
 function saveOrderState() { if(!activeStore) return; const s = orderState[activeStore]; s.juices={}; document.querySelectorAll('.juice-input').forEach(el => { s.juices[`${el.getAttribute('data-flavor')}_${el.getAttribute('data-vol')}`] = el.getAttribute('data-val'); }); s.fresh = Array.from(document.querySelectorAll('.inp-fresh')).map(el => ({val: el.value, checked: el.checked})); s.bottles = Array.from(document.querySelectorAll('.inp-bottle')).map(el => ({val: el.value, checked: el.checked})); s.haccp = Array.from(document.querySelectorAll('.inp-haccp')).map(el => ({val: el.value, checked: el.checked})); }
 function restoreOrderState() { if(!activeStore) return; const s = orderState[activeStore]; Object.keys(s.juices).forEach(key => { const parts = key.split('_'), el = document.querySelector(`.juice-input[data-flavor="${parts[0]}"][data-vol="${parts[1]}"]`); if(el) { el.setAttribute('data-val', s.juices[key]); el.innerText = s.juices[key] === '0' ? '-' : s.juices[key]; el.classList.toggle('has-value', s.juices[key] > 0); } }); s.fresh.forEach(item => { const el = document.querySelector(`.inp-fresh[value="${item.val}"]`); if(el) el.checked = item.checked; }); s.bottles.forEach(item => { const el = document.querySelector(`.inp-bottle[value="${item.val}"]`); if(el) el.checked = item.checked; }); s.haccp.forEach(item => { const el = document.querySelector(`.inp-haccp[value="${item.val}"]`); if(el) el.checked = item.checked; }); }
 
@@ -714,9 +1401,11 @@ function processOrder(e) {
   JUICES[activeStore].forEach(flavor => { 
     let flavorKey = flavor; if (["TREE TOMATO", "HIBISCUS", "TAMARIND", "BEETROOT", "TANGERINE", "CARROT"].includes(flavor)) { flavorKey = activeStore === 'chandarana' ? `${flavor} ` : flavor; } 
     let val5 = document.querySelector(`.juice-input[data-flavor="${flavor}"][data-vol="5L"]`)?.getAttribute('data-val') || "0"; let val3 = document.querySelector(`.juice-input[data-flavor="${flavor}"][data-vol="3L"]`)?.getAttribute('data-val') || "0"; let qty = val5 !== "0" ? val5 : (val3 !== "0" ? val3 : "0"); 
+    
     if(qty !== "0") { payload[(activeStore==='chandarana'?"JUICE (5 LITRES/3 LITRES)":"JUICE (5 ITRES / 3 LITRES)") + ` [${flavorKey}]`] = qty + " Litres"; hasJuices = true; juiceHtml += `<li style="margin-bottom:4px;">${flavor} - ${qty} L</li>`; } 
   });
   juiceHtml += `</ul></div>`; if(hasJuices) html += juiceHtml;
+
   function formatList(title, commaStr) { if(!commaStr) return ''; let items = commaStr.split(',').map(s => s.trim()).filter(Boolean); return `<div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(156, 163, 175, 0.15);"><strong style="color:var(--dynamic-primary);">${title}</strong><ul style="margin:8px 0 0 20px; padding:0;">` + items.map(i => `<li style="margin-bottom:4px;">${i}</li>`).join('') + `</ul></div>`; }
 
   if(payload["FRESH INPUTS"]) html += formatList("FRESH INPUTS", payload["FRESH INPUTS"]);
@@ -724,70 +1413,129 @@ function processOrder(e) {
   if(payload["HACCP SUPPLIES"]) html += formatList("HACCP SUPPLIES", payload["HACCP SUPPLIES"]);
   if(payload["NOTES"]) html += `<div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(156, 163, 175, 0.15);"><strong style="color:var(--dynamic-primary);">NOTES</strong><br>${payload["NOTES"]}</div>`;
 
-  pendingOrderPayload = payload; document.getElementById('modalShopName').innerText = activeStore.toUpperCase(); document.getElementById('orderSummaryDetails').innerHTML = html; document.getElementById('orderConfirmModal').style.display = 'flex';
+  pendingOrderPayload = payload; 
+  document.getElementById('modalShopName').innerText = activeStore.toUpperCase();
+  document.getElementById('orderSummaryDetails').innerHTML = html; 
+  document.getElementById('orderConfirmModal').style.display = 'flex';
 }
+
 function closeConfirmModal() { document.getElementById('orderConfirmModal').style.display = 'none'; }
+
 function downloadReceipt(btn) {
-  const oldText = btn.innerHTML; btn.innerHTML = 'Wait...'; btn.disabled = true; const content = document.getElementById('orderSummaryDetails');
+  const oldText = btn.innerHTML; btn.innerHTML = 'Wait...'; btn.disabled = true;
+  const content = document.getElementById('orderSummaryDetails');
+  
   if (window.html2canvas) {
-      const tempDiv = document.createElement('div'); tempDiv.style.width = '600px'; tempDiv.style.padding = '30px'; tempDiv.style.background = '#ffffff'; tempDiv.style.color = '#111827'; tempDiv.style.fontFamily = 'Nunito, sans-serif';
-      const clone = content.cloneNode(true); clone.style.boxShadow = 'none'; clone.style.border = '2px solid #e5e7eb'; clone.style.margin = '0'; clone.style.fontSize = '16px'; clone.style.borderRadius = '16px'; clone.style.padding = '24px'; clone.style.maxHeight = 'none'; clone.style.overflow = 'visible';
-      const title = document.createElement('h2'); title.innerText = activeStore.toUpperCase() + ' ORDER'; title.style.textAlign = 'center'; title.style.marginBottom = '20px'; title.style.color = activeStore === 'chandarana' ? '#10b981' : '#3b82f6';
-      tempDiv.appendChild(title); tempDiv.appendChild(clone); document.body.appendChild(tempDiv); tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px';
+      const tempDiv = document.createElement('div');
+      tempDiv.style.width = '600px'; tempDiv.style.padding = '30px'; 
+      tempDiv.style.background = '#ffffff'; tempDiv.style.color = '#111827'; 
+      tempDiv.style.fontFamily = 'Nunito, sans-serif';
       
+      const clone = content.cloneNode(true);
+      clone.style.boxShadow = 'none'; clone.style.border = '2px solid #e5e7eb'; clone.style.margin = '0'; 
+      clone.style.fontSize = '16px'; clone.style.borderRadius = '16px'; clone.style.padding = '24px'; 
+      clone.style.maxHeight = 'none'; clone.style.overflow = 'visible';
+      
+      const title = document.createElement('h2');
+      title.innerText = activeStore.toUpperCase() + ' ORDER';
+      title.style.textAlign = 'center'; title.style.marginBottom = '20px'; title.style.color = activeStore === 'chandarana' ? '#10b981' : '#3b82f6';
+      tempDiv.appendChild(title);
+      tempDiv.appendChild(clone);
+      
+      document.body.appendChild(tempDiv);
+      tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px';
+      
+      // Fast canvas execution via natively imported html2canvas
       window.html2canvas(tempDiv, { scale: 1.5, useCORS: true, logging: false }).then(canvas => {
-          const a = document.createElement('a'); a.href = canvas.toDataURL('image/jpeg', 0.85); a.download = 'Order_' + document.getElementById('o-id').value + '_' + Date.now() + '.jpg'; document.body.appendChild(a); a.click(); document.body.removeChild(a); document.body.removeChild(tempDiv); btn.innerHTML = 'Saved!'; setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 1500); 
-      }).catch(e => { btn.innerHTML = 'Error'; setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 1500); document.body.removeChild(tempDiv); });
-  } else { btn.innerHTML = 'Error'; setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 1500); alert("Save functionality is not loaded yet."); }
+          const a = document.createElement('a');
+          a.href = canvas.toDataURL('image/jpeg', 0.85);
+          a.download = 'Order_' + document.getElementById('o-id').value + '_' + Date.now() + '.jpg';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          document.body.removeChild(tempDiv);
+          
+          btn.innerHTML = 'Saved!'; setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 1500); 
+      }).catch(e => {
+          btn.innerHTML = 'Error'; setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 1500); 
+          document.body.removeChild(tempDiv);
+      });
+  } else {
+      btn.innerHTML = 'Error';
+      setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 1500); 
+      alert("Save functionality is not loaded yet. Check your connection.");
+  }
 }
 
 async function confirmAndSendOrder() {
   const btn = document.getElementById('confirmSendBtn'); btn.disabled = true; btn.innerHTML = 'Wait...';
   try {
-    const targetSheet = activeStore === 'chandarana' ? 'Chandarana' : 'Carrefour';
+    const targetSheet = activeStore;
     
-    const orderKey = `order_time_${pendingOrderPayload["ID NO."]}_${activeStore}`;
-    const lastOrderTime = parseInt(Storage.get(orderKey)) || 0;
-    const now = Date.now();
-    const sevenHoursMs = 7 * 60 * 60 * 1000;
-
-    if (now - lastOrderTime < sevenHoursMs) {
-        pendingOrderPayload["NOTES"] = "[APPEND TO PREVIOUS ORDER] " + (pendingOrderPayload["NOTES"] || "");
+    // Smart Duplicate Append Logic Locally
+    const todayKey = `order_sent_${new Date().toDateString()}_${pendingOrderPayload["ID NO."]}_${activeStore}`;
+    if (Storage.get(todayKey)) {
+        pendingOrderPayload["NOTES"] = "[APPEND TO PREVIOUS ORDER] " + pendingOrderPayload["NOTES"];
     }
 
     const res = await (await fetch(SCRIPT_URL, { method: "POST", headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'saveOrder', store: targetSheet, data: pendingOrderPayload }) })).json();
     if (!res.ok) throw new Error(res.error);
     
-    Storage.set(orderKey, now.toString());
+    // Mark as sent today
+    Storage.set(todayKey, "true");
+
     document.getElementById('orderConfirmModal').style.display = 'none'; document.getElementById('orderFormInner').style.display = 'none'; document.getElementById('orderTopBar').style.display = 'none'; document.getElementById('orderSuccessScreen').style.display = 'flex';
-    orderState = { chandarana: { juices: {}, fresh: [], bottles: [], haccp: [] }, carrefour: { juices: {}, fresh: [], bottles: [], haccp: [] } }; orderStoreState = { chandarana: { id: '' }, carrefour: { id: '' } }; document.getElementById('o-id').value = ''; document.getElementById('o-notes').value = '';
+    orderState = { chandarana: { juices: {}, fresh: [], bottles: [], haccp: [] }, carrefour: { juices: {}, fresh: [], bottles: [], haccp: [] } }; orderStoreState = { chandarana: { id: '' }, carrefour: { id: '' } }; Storage.remove('last_order_id_chandarana'); Storage.remove('last_order_id_carrefour'); document.getElementById('o-id').value = ''; document.getElementById('o-notes').value = '';
   } catch (err) { alert(err.message); }
   btn.disabled = false; btn.innerText = 'Confirm';
 }
-function resetOrderForm() { document.getElementById('orderSuccessScreen').style.display = 'none'; document.getElementById('orderTopBar').style.display = 'flex'; document.getElementById('orderFormInner').style.display = 'block'; document.getElementById('o-id').value = ''; document.getElementById('o-notes').value = ''; renderDynamicOrderContent(); instantOrderStaffCheck(''); }
+
+function resetOrderForm() { 
+  document.getElementById('orderSuccessScreen').style.display = 'none'; document.getElementById('orderTopBar').style.display = 'flex'; document.getElementById('orderFormInner').style.display = 'block'; 
+  document.getElementById('o-id').value = ''; document.getElementById('o-notes').value = ''; 
+  renderDynamicOrderContent(); instantOrderStaffCheck(''); 
+}
 
 // ==========================================
-// ATTENDANCE LOGIC
+// ATTENDANCE SYSTEM LOGIC
 // ==========================================
-let branches = [], coords = null, staffName = "", photo = null, activeFetchId = 0, currentAction = "", videoStream = null, lastSelectedBranch = "", staffRestrictionError = null, warningTimer = null, lastValidatedId = ""; 
+let staff = [], branches = [], coords = null, staffName = "", photo = null;
+let activeFetchId = 0, currentAction = "", videoStream = null, lastSelectedBranch = "", staffRestrictionError = null, warningTimer = null, lastValidatedId = ""; 
 
 function openAttendance() { 
-  switchView('view-attendance'); let savedTerminal = Storage.get('selected_terminal');
-  if (savedTerminal) { switchTerminalAtt(savedTerminal, true); } else { currentTerminal = null; document.body.className = ''; updateBGLayer('layerHub'); document.getElementById('attMainFormInner').style.display = 'none'; document.getElementById('a-pill-slider').style.width = '0'; document.getElementById('a-btn-chandarana').classList.remove('active'); document.getElementById('a-btn-carrefour').classList.remove('active'); document.getElementById('storeSign').innerText = 'SELECT SHOP'; triggerSignAnimation(); }
+  switchView('view-attendance'); 
+  let savedTerminal = Storage.get('selected_terminal');
+  
+  if (savedTerminal) {
+      switchTerminalAtt(savedTerminal, true);
+  } else {
+      currentTerminal = null;
+      document.body.className = '';
+      updateBGLayer('layerHub');
+      document.getElementById('attMainFormInner').style.display = 'none';
+      document.getElementById('a-pill-slider').style.width = '0';
+      document.getElementById('a-btn-chandarana').classList.remove('active');
+      document.getElementById('a-btn-carrefour').classList.remove('active');
+      document.getElementById('storeSign').innerText = 'SELECT SHOP';
+      triggerSignAnimation();
+  }
 }
+
 function triggerSignAnimation() { const sign = document.getElementById('storeSign'); if (sign) { sign.classList.remove('nudge'); void sign.offsetWidth; sign.classList.add('nudge'); } }
 
 function switchTerminalAtt(term, isInitialOpen = false) {
   if (currentTerminal === term && document.getElementById('view-attendance').classList.contains('active') && !isInitialOpen) { triggerSignAnimation(); return; }
   if (!isInitialOpen && currentTerminal) { Storage.set('last_staff_id_' + currentTerminal, document.getElementById('staffID').value); }
   
-  currentTerminal = term; Storage.set('selected_terminal', term); branches = []; lastSelectedBranch = ""; lastValidatedId = ""; document.getElementById('branch').innerHTML = '<option value="">Loading...</option>';
+  currentTerminal = term; Storage.set('selected_terminal', term);
+  staff = []; branches = []; lastSelectedBranch = ""; lastValidatedId = ""; document.getElementById('branch').innerHTML = '<option value="">Loading...</option>';
   document.getElementById('attSuccessScreen').style.display = 'none'; document.getElementById('attMainFormInner').style.display = 'block'; document.getElementById('attMainContainer').style.overflow = 'hidden';
-  document.body.className = `theme-${currentTerminal}`; updateBGLayer(currentTerminal === 'chandarana' ? 'layerChandarana' : 'layerCarrefour');
+  
+  document.body.className = `theme-${currentTerminal}`;
+  updateBGLayer(currentTerminal === 'chandarana' ? 'layerChandarana' : 'layerCarrefour');
   
   const title = document.getElementById('storeSign'); title.innerText = currentTerminal.charAt(0).toUpperCase() + currentTerminal.slice(1); triggerSignAnimation();
   document.getElementById('a-btn-chandarana').classList.toggle('active', currentTerminal === 'chandarana'); document.getElementById('a-btn-carrefour').classList.toggle('active',  currentTerminal === 'carrefour'); updatePillSlider('a-terminal-wrapper', 'a-pill-slider');
-  resetStepsFrom(1); document.getElementById('step1').classList.add('activeStep'); document.getElementById('staffID').value = ''; initAppAtt();
+  resetStepsFrom(1); document.getElementById('step1').classList.add('activeStep'); document.getElementById('staffID').value = ''; 
+  initAppAtt();
 }
 
 function fetchFromServer(action, data) { return fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({action:action, data:data, terminal:currentTerminal}) }).then(r => r.json()).then(j => { if(!j.ok) throw new Error(j.error||'Server error'); return j.data; }); }
@@ -795,23 +1543,25 @@ function fetchFromServer(action, data) { return fetch(SCRIPT_URL, { method:'POST
 function populateBranches(list) {
   if (!Array.isArray(list)) return;
   const select = document.getElementById('branch'), currentVal = select.value || Storage.get('last_branch_' + currentTerminal);
+  
   const options = '<option value="" style="color: var(--text-primary)">Choose Branch</option>' + list.map(b => `<option value="${b[0]}" style="color: var(--dynamic-primary); font-weight: 700;">${b[0]}</option>`).join('');
   if (select.innerHTML !== options) { select.innerHTML = options; }
   if (currentVal) { select.value = currentVal; lastSelectedBranch = currentVal; showSuccess('branchMsg', 'Branch Selected'); } else { clearMsg('branchMsg'); }
 }
+
 function restoreUserState() {
   const savedBranch = Storage.get('last_branch_' + currentTerminal); const branchEl = document.getElementById('branch'); if (savedBranch) { branchEl.value = savedBranch; handleBranchChange(true); }
-  const savedStaffID = Storage.get('last_staff_id_' + currentTerminal); const staffEl = document.getElementById('staffID'); if (savedStaffID) { staffEl.value = savedStaffID; handleStaffInput(); } 
+  const savedStaffID = Storage.get('last_staff_id_' + currentTerminal); const staffEl = document.getElementById('staffID'); if (savedStaffID && staff.length > 0) { staffEl.value = savedStaffID; handleStaffInput(); } 
 }
 
 function initAppAtt() {
   if (!currentTerminal) return;
   purgeCacheAtMidnight(); const myId = ++activeFetchId; const cacheKey = currentTerminal + '_portal_data'; let cached = false;
-  try { const raw = Storage.get(cacheKey); if (raw) { const p = JSON.parse(raw); if (p && Array.isArray(p.branches)) { branches = p.branches || []; populateBranches(branches); restoreUserState(); cached = true; } } } catch(e) {}
+  try { const raw = Storage.get(cacheKey); if (raw) { const p = JSON.parse(raw); if (p && Array.isArray(p.branches)) { staff = p.staff || []; branches = p.branches || []; populateBranches(branches); restoreUserState(); cached = true; } } } catch(e) {}
   fetchFromServer('getPortalData', {}).then(data => {
     if (myId !== activeFetchId) return;
-    const changed = JSON.stringify(branches) !== JSON.stringify(data.branches); branches = data.branches || [];
-    try { Storage.set(cacheKey, JSON.stringify({branches})); } catch(e) {}
+    const changed = JSON.stringify(branches) !== JSON.stringify(data.branches) || JSON.stringify(staff) !== JSON.stringify(data.staff); staff = data.staff || []; branches = data.branches || [];
+    try { Storage.set(cacheKey, JSON.stringify({staff, branches})); } catch(e) {}
     if (!cached || changed) { populateBranches(branches); if (!document.getElementById('staffID').value) { restoreUserState(); } } 
   }).catch(() => { if (myId === activeFetchId && branches.length === 0) document.getElementById('branch').innerHTML = '<option value="">Offline — waiting for connection</option>'; });
 }
@@ -823,6 +1573,7 @@ function resetStepsFrom(n) {
   if (n <= 3) { coords = null; clearMsg('gpsMsg'); }
   if (n <= 4) { photo = null; stopCamera(); clearMsg('cameraMsg'); document.getElementById('successPhoto').src = ''; }
 }
+
 function resetAttForm() { document.getElementById('attSuccessScreen').style.display='none'; document.getElementById('attMainFormInner').style.display='block'; document.getElementById('attMainContainer').style.overflow = 'hidden'; document.getElementById('successPhoto').style.opacity = '1'; document.getElementById('staffID').value = ''; resetStepsFrom(3); handleBranchChange(true); initAppAtt(); }
 
 function showSuccess(id,txt){ const e=document.getElementById(id); e.innerHTML=`<span class="dot"></span> ${txt}`; e.className='msg success'; }
@@ -851,56 +1602,49 @@ function handleBranchChange(isInit = false) {
 }
 document.getElementById('branch').addEventListener('change', () => handleBranchChange(false));
 
-let attStaffTimer;
-function handleStaffInput() {
-  const val = document.getElementById('staffID').value.trim(); 
-  staffRestrictionError = null; const msgEl = document.getElementById('staffMsg'); 
-  clearTimeout(attStaffTimer);
-  
-  // LOCK UI INSTANTLY IF CHANGED
-  if (val !== lastValidatedId) {
-      resetStepsFrom(3); 
-      lastValidatedId = "";
-  }
-  
-  if (val.length < 2) { clearMsg('staffMsg'); return; }
-  
-  // 1. INSTANT LOCAL CHECK
-  const match = orderStaffCache.chandarana.find(s => s.id === val) || orderStaffCache.carrefour.find(s => s.id === val);
-  if (match) { 
-      processAttendanceMatch(val, match); 
-  } else {
-      // 2. NETWORK FETCH
-      msgEl.innerHTML = '<span class="btn-spinner" style="width:14px;height:14px;"></span> Verifying...'; msgEl.className = 'msg';
-      
-      attStaffTimer = setTimeout(() => {
-          fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'fetchUser', id: val }) })
-          .then(r => r.json()).then(res => {
-              if (document.getElementById('staffID').value.trim() !== val) return;
-              if (res.found) { 
-                  orderStaffCache[res.store].push({id: val, name: res.name, phone: res.phone, branch: res.branch, attStatus: res.attStatus, lastTime: res.lastTime, attBranch: res.attBranch}); 
-                  Storage.set('order_staff_' + res.store, JSON.stringify(orderStaffCache[res.store])); 
-                  processAttendanceMatch(val, res); 
-              } else { 
-                  lastValidatedId = ""; resetStepsFrom(3); showError('staffMsg','Invalid Staff ID.'); 
-              }
-          }).catch(e => { if (document.getElementById('staffID').value.trim() === val) { showError('staffMsg','Network Error'); } });
-      }, 250); // Faster lookup
-  }
-}
-
-function processAttendanceMatch(val, match) {
-    lastValidatedId = val; staffName = match.name; let lastAction = match.attStatus || null; let lastTime = match.lastTime || null;
-    try { const localState = JSON.parse(Storage.get('local_att_state')) || {}; const myLocal = localState[val]; const todayStr = new Date().toDateString(); if (myLocal && myLocal.date === todayStr) { if (!lastTime || myLocal.ts >= lastTime) { lastAction = myLocal.action; lastTime = myLocal.ts; } } } catch(e) {}
-    if (lastAction === 'Clock Out') { staffRestrictionError = 'You have already clocked out today.'; } else if (lastAction === 'Clock In') { const hoursSince = (Date.now() - lastTime) / (1000 * 60 * 60); const currentHour = new Date().getHours(); if (hoursSince < 6 && currentHour < 19) { staffRestrictionError = 'You already clocked in, clock out at the end of your shift.'; } }
-    const msgEl = document.getElementById('staffMsg'); msgEl.style.opacity = '1'; showSuccess('staffMsg', `Welcome ${staffName}`); if (!document.getElementById('step3').classList.contains('activeStep')) activateStep(3);
-}
-
 function determineAutoAction() {
-  const val = document.getElementById('staffID').value.trim(); let lastAction = "Clock Out"; 
-  try { const localState = JSON.parse(Storage.get('local_att_state')) || {}; const myLocal = localState[val]; if (myLocal && myLocal.date === new Date().toDateString()) { lastAction = myLocal.action; } } catch(e) {}
+  const val = document.getElementById('staffID').value.trim();
+  let lastAction = "Clock Out"; 
+  if (val && staff.length > 0) {
+    const match = staff.find(s => s.id === val);
+    if (match) {
+      lastAction = match.status; 
+      try { 
+        const localState = JSON.parse(Storage.get('local_att_state')) || {}; 
+        const myLocal = localState[val]; 
+        if (myLocal && myLocal.date === new Date().toDateString() && (!match.lastTime || myLocal.ts > match.lastTime)) {
+          lastAction = myLocal.action; 
+        } 
+      } catch(e) {}
+      
+      if (match.lastTime) { 
+        const d = new Date(match.lastTime), now = new Date(); 
+        if (d.getDate() !== now.getDate() || d.getMonth() !== now.getMonth() || d.getFullYear() !== now.getFullYear()) { 
+          lastAction = null; 
+        } 
+      }
+    }
+  }
   return (lastAction === 'Clock In') ? 'Clock Out' : 'Clock In';
 }
+
+function handleStaffInput() {
+  const val = document.getElementById('staffID').value.trim(); staffRestrictionError = null; 
+  if (val.length < 2) { lastValidatedId = ""; resetStepsFrom(3); clearMsg('staffMsg'); return; }
+  const match = staff.find(s => s.id === val);
+  if (match) {
+    const isSameUser = (lastValidatedId === val); lastValidatedId = val; staffName = match.name; let lastAction = match.status; let lastTime = match.lastTime;
+    try { const localState = JSON.parse(Storage.get('local_att_state')) || {}; const myLocal = localState[val]; const todayStr = new Date().toDateString(); if (myLocal && myLocal.date === todayStr) { if (!lastTime || myLocal.ts > lastTime) { lastAction = myLocal.action; lastTime = myLocal.ts; } } } catch(e) {}
+    if (lastTime) { const d = new Date(lastTime), now = new Date(); if (d.getDate() !== now.getDate() || d.getMonth() !== now.getMonth() || d.getFullYear() !== now.getFullYear()) { lastAction = null; } }
+
+    if (lastAction === 'Clock Out') { staffRestrictionError = 'You have already clocked out today.'; } 
+    else if (lastAction === 'Clock In') { const hoursSince = (Date.now() - lastTime) / (1000 * 60 * 60); const currentHour = new Date().getHours(); if (hoursSince < 6 && currentHour < 19) { staffRestrictionError = 'You already clocked in, clock out at the end of your shift.'; } }
+    
+    const msgEl = document.getElementById('staffMsg'); msgEl.style.opacity = '1'; showSuccess('staffMsg', `Welcome ${staffName}`);
+    if (!isSameUser) { if (document.getElementById('step4').classList.contains('activeStep')) resetStepsFrom(4); if (!document.getElementById('step3').classList.contains('activeStep')) activateStep(3); } else { if (!document.getElementById('step3').classList.contains('activeStep')) activateStep(3); }
+  } else { lastValidatedId = ""; resetStepsFrom(3); showError('staffMsg','Invalid Staff ID. Please check.'); }
+}
+document.getElementById('staffID').oninput = handleStaffInput;
 
 function showGuideModal(type) {
   const modal=document.getElementById('guideModal'), title=document.getElementById('guideTitle'), text=document.getElementById('guideText'), icon=document.getElementById('guideIcon');
@@ -941,17 +1685,32 @@ function startCamera() {
   btn.innerHTML = '<span class="btn-spinner" style="display:inline-block; vertical-align:middle; width:16px; height:16px; margin-right:8px;"></span><span style="vertical-align:middle;">Starting...</span>'; clearMsg('cameraMsg');
   const constraints = { video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false };
   navigator.mediaDevices.getUserMedia(constraints)
-    .then(stream => { videoStream = stream; const video = document.getElementById('cameraVideo'); video.srcObject = stream; video.onloadedmetadata = () => { video.play().catch(()=>{}); document.getElementById('videoContainerWrapper').classList.add('expanded'); document.getElementById('cameraBackdrop').classList.add('show'); video.classList.add('live'); btn.innerText = 'Take Selfie'; document.getElementById('shutterBtn').classList.remove('loading'); }; })
+    .then(stream => { 
+      videoStream = stream; const video = document.getElementById('cameraVideo'); video.srcObject = stream; 
+      video.onloadedmetadata = () => { 
+        video.play().catch(()=>{}); 
+        document.getElementById('videoContainerWrapper').classList.add('expanded'); 
+        document.getElementById('cameraBackdrop').classList.add('show'); 
+        video.classList.add('live'); 
+        btn.innerText = 'Take Selfie'; 
+        document.getElementById('shutterBtn').classList.remove('loading');
+      }; 
+    })
     .catch(err => { btn.innerText = 'Take Selfie'; showGuideModal('camera'); });
 }
 
 function capturePhotoNative() {
-  const flash = document.getElementById('cameraFlash'); flash.classList.remove('fire'); void flash.offsetWidth; flash.classList.add('fire');
-  const shutterBtn = document.getElementById('shutterBtn'); shutterBtn.classList.add('loading');
+  const flash = document.getElementById('cameraFlash');
+  flash.classList.remove('fire'); void flash.offsetWidth; flash.classList.add('fire');
+  
+  const shutterBtn = document.getElementById('shutterBtn');
+  shutterBtn.classList.add('loading');
+  
   currentAction = determineAutoAction();
   
   const video = document.getElementById('cameraVideo'), wrapper = document.getElementById('videoContainerWrapper'); 
-  const vw = video.videoWidth || 1280, vh = video.videoHeight || 720, cw = wrapper.offsetWidth, ch = wrapper.offsetHeight, containerAspect = cw / ch, videoAspect = vw / vh;
+  const vw = video.videoWidth || 1280, vh = video.videoHeight || 720, cw = wrapper.offsetWidth, ch = wrapper.offsetHeight;
+  const containerAspect = cw / ch, videoAspect = vw / vh;
   let sWidth, sHeight, startX, startY;
   
   if (videoAspect > containerAspect) { sHeight = vh; sWidth = vh * containerAspect; startX = (vw - sWidth) / 2; startY = 0; } else { sWidth = vw; sHeight = vw / containerAspect; startX = 0; startY = (vh - sHeight) / 2; }
@@ -960,17 +1719,24 @@ function capturePhotoNative() {
   const ctx = canvas.getContext('2d');
   
   ctx.translate(canvas.width, 0); ctx.scale(-1, 1); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(video, startX, startY, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-  photo = canvas.toDataURL('image/jpeg', 0.85); video.pause();
+  photo = canvas.toDataURL('image/jpeg', 0.85); 
+  
+  video.pause();
   
   setTimeout(() => {
-    document.getElementById('successPhoto').src = photo; stopCamera(); 
-    const btn = document.getElementById('openCameraBtn'); btn.innerHTML = '<span class="btn-spinner" style="display:inline-block; vertical-align:middle; width:16px; height:16px; margin-right:8px;"></span><span style="vertical-align:middle;">Submitting...</span>'; btn.disabled = true; clearMsg('cameraMsg'); 
+    document.getElementById('successPhoto').src = photo; 
+    stopCamera(); 
+    
+    const btn = document.getElementById('openCameraBtn'); 
+    btn.innerHTML = '<span class="btn-spinner" style="display:inline-block; vertical-align:middle; width:16px; height:16px; margin-right:8px;"></span><span style="vertical-align:middle;">Submitting...</span>'; 
+    btn.disabled = true; clearMsg('cameraMsg'); 
     submitAttendanceRealtime();
   }, 250); 
 }
 
 function stopCamera() {
-  const wrapper = document.getElementById('videoContainerWrapper'), backdrop = document.getElementById('cameraBackdrop'); wrapper.classList.remove('expanded'); backdrop.classList.remove('show');
+  const wrapper = document.getElementById('videoContainerWrapper'), backdrop = document.getElementById('cameraBackdrop');
+  wrapper.classList.remove('expanded'); backdrop.classList.remove('show');
   const video = document.getElementById('cameraVideo'); video.classList.remove('live');
   const btn = document.getElementById('openCameraBtn'); if (btn) btn.textContent = 'Take Selfie';
   setTimeout(() => { if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; } video.srcObject = null; }, 300);
@@ -987,19 +1753,17 @@ async function submitAttendanceRealtime() {
   if (navigator.onLine) {
     try {
       const res = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'recordAttendance', data: payload, terminal: currentTerminal }) });
-      const j = await res.json(); if (j.ok) { isSuccess = true; } else if (j.error && j.error.includes("busy")) { isSuccess = false; } else { showError('cameraMsg', j.error); btn.textContent = 'Take Selfie'; btn.disabled = false; return; }
+      const j = await res.json();
+      if (j.ok) { isSuccess = true; } else if (j.error && j.error.includes("busy")) { isSuccess = false; } else { showError('cameraMsg', j.error); btn.textContent = 'Take Selfie'; btn.disabled = false; return; }
     } catch(err) {}
   }
 
   if (!isSuccess) { let queue = []; try { queue = JSON.parse(Storage.get('attendance_queue')) || []; } catch(e){} queue.push({ payload: payload, terminal: currentTerminal }); Storage.set('attendance_queue', JSON.stringify(queue)); processAttendanceQueue(); }
 
   let localState = {}; try { localState = JSON.parse(Storage.get('local_att_state')) || {}; } catch(e){}
-  localState[staffID] = { action: submittedAction, ts: Date.now(), date: new Date().toDateString(), branch: branch }; Storage.set('local_att_state', JSON.stringify(localState));
-  
-  try { 
-      let cachedMatch = orderStaffCache[currentTerminal].find(s => s.id === staffID); 
-      if (cachedMatch) { cachedMatch.attStatus = submittedAction; cachedMatch.lastTime = Date.now(); cachedMatch.attBranch = branch; Storage.set('order_staff_' + currentTerminal, JSON.stringify(orderStaffCache[currentTerminal])); } 
-  } catch(e) {}
+  localState[staffID] = { action: submittedAction, ts: Date.now(), date: new Date().toDateString(), branch: branch };
+  Storage.set('local_att_state', JSON.stringify(localState));
+  try { const cacheKey = currentTerminal + '_portal_data'; const cached = JSON.parse(Storage.get(cacheKey)); if (cached && cached.staff) { const cachedMatch = cached.staff.find(s => s.id === staffID); if (cachedMatch) { cachedMatch.status = submittedAction; cachedMatch.lastTime = Date.now(); cachedMatch.branch = branch; Storage.set(cacheKey, JSON.stringify(cached)); } } } catch(e) {}
   
   clearMsg('cameraMsg'); finishSubmission(submittedAction); btn.disabled = false;
 }
@@ -1010,6 +1774,7 @@ async function processAttendanceQueue() {
   let queue = []; try { queue = JSON.parse(Storage.get('attendance_queue')) || []; } catch(e){} if (queue.length === 0) return;
   const now = Date.now(), maxAge = 6 * 60 * 60 * 1000, initialLength = queue.length; queue = queue.filter(item => (now - new Date(item.payload.clientTimestamp).getTime()) < maxAge);
   if (queue.length !== initialLength) { Storage.set('attendance_queue', JSON.stringify(queue)); if (queue.length === 0) return; }
+
   isAttQueueSyncing = true;
   while (queue.length > 0 && navigator.onLine) {
     const item = queue[0];
@@ -1024,20 +1789,36 @@ async function processAttendanceQueue() {
 setInterval(processAttendanceQueue, 15000);
 
 function triggerSuccessAnimation() {
-    const circle = document.getElementById('successTickCircle'), check = document.getElementById('successTickCheck');
-    circle.classList.remove('animate-circle'); check.classList.remove('animate-check');
+    const circle = document.getElementById('successTickCircle');
+    const check = document.getElementById('successTickCheck');
+    circle.classList.remove('animate-circle');
+    check.classList.remove('animate-check');
     void circle.offsetWidth; void check.offsetWidth;
-    circle.classList.add('animate-circle'); check.classList.add('animate-check');
+    circle.classList.add('animate-circle');
+    check.classList.add('animate-check');
 }
 
 function finishSubmission(action) {
   const firstName = staffName.split(' ')[0] || staffName, hrs = new Date().getHours(), mins = new Date().getMinutes(), timeVal = hrs + (mins / 60.0); let msg='';
   if (action === 'Clock In') { if (timeVal < 6.5) { msg="Fantastic start — you're early today! Keep it up."; } else if (timeVal <= 7.66) { msg="Great, you are on time for the morning shift."; } else if (timeVal < 11.0) { msg="Note: Late for morning shift."; } else if (timeVal < 14.0) { msg="Early for the second shift. Great job!"; } else if (timeVal <= 14.66) { msg="On time for the second shift. Have a productive afternoon!"; } else { msg="Note: Late for afternoon shift."; }
   } else { if (hrs < 16) { msg="Have a wonderful afternoon!"; } else { msg="Have a restful night!"; } if (hrs >= 18) { msg += " And remember to place your order."; } }
-  let tickColor = '#f59e0b'; if (action === 'Clock In') { tickColor = currentTerminal === 'carrefour' ? '#3b82f6' : '#10b981'; }
+
+  let tickColor = '#f59e0b'; // Clock out default
+  if (action === 'Clock In') {
+      tickColor = currentTerminal === 'carrefour' ? '#3b82f6' : '#10b981';
+  }
+
   document.getElementById('successBadgeText').textContent = action.toUpperCase(); 
-  const badge = document.getElementById('successBadge'); badge.style.color = tickColor; badge.style.border = `2px solid ${tickColor}`; document.getElementById('successSvg').style.stroke = tickColor;
-  triggerSuccessAnimation(); document.getElementById('successName').textContent = firstName; document.getElementById('successMsg').textContent = msg; document.getElementById('attMainContainer').style.overflow = 'visible'; document.getElementById('attMainFormInner').style.display = 'none'; document.getElementById('attSuccessScreen').style.display = 'flex';
+  
+  const badge = document.getElementById('successBadge');
+  badge.style.color = tickColor;
+  badge.style.border = `2px solid ${tickColor}`;
+  document.getElementById('successSvg').style.stroke = tickColor;
+  
+  triggerSuccessAnimation();
+
+  document.getElementById('successName').textContent = firstName; document.getElementById('successMsg').textContent = msg;
+  document.getElementById('attMainContainer').style.overflow = 'visible'; document.getElementById('attMainFormInner').style.display = 'none'; document.getElementById('attSuccessScreen').style.display = 'flex';
 }
 </script>
 </body>
