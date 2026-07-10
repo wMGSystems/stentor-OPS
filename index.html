@@ -158,9 +158,7 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
 <div id="layerChandarana" class="bg-layer layer-chandarana"></div>
 <div id="layerCarrefour" class="bg-layer layer-carrefour"></div>
 
-<!-- =========================
-     VIEW 1: WELCOME SCREEN
-========================== -->
+<!-- VIEW 1: WELCOME SCREEN -->
 <div id="view-welcome" class="welcome-section active" style="display: flex;">
   <div class="welcome-top" id="welcomeTop"><h1 class="welcome-title">STENTOR<br>ENT<br>LTD.</h1></div>
   <div class="welcome-cycler"><div id="welcomeMessage">Welcome</div></div>
@@ -175,9 +173,7 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
   </div>
 </div>
 
-<!-- =========================
-     VIEW 2: HUB MENU
-========================== -->
+<!-- VIEW 2: HUB MENU -->
 <div id="view-menu" class="view-section" style="justify-content: center; min-height: 100vh;">
   <div class="menu-container">
     <div class="thought-bubble-container" onclick="openProfile()">
@@ -199,9 +195,7 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
   <div class="inline-back-wrapper" style="margin-top: 30px;"><div class="inline-back solid-panel" onclick="goToWelcome()">← Welcome</div></div>
 </div>
 
-<!-- =========================
-     VIEW 3: PROFILE REGISTRATION
-========================== -->
+<!-- VIEW 3: PROFILE REGISTRATION -->
 <div id="view-profile" class="view-section">
   <div class="app-container scrollable solid-panel">
     <h2 style="font-weight:900; color:var(--text-primary); text-align:center; font-size: 18px; margin-bottom: 20px;">PROFILE REGISTRATION</h2>
@@ -246,9 +240,7 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
   <div class="inline-back-wrapper"><div class="inline-back solid-panel" onclick="goToMenu()">← Menu</div></div>
 </div>
 
-<!-- =========================
-     VIEW 4: ORDERS
-========================== -->
+<!-- VIEW 4: ORDERS -->
 <div id="view-orders" class="view-section">
   <div class="app-container scrollable solid-panel">
     <div class="top-bar" id="orderTopBar">
@@ -294,9 +286,7 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
   <div class="inline-back-wrapper"><div class="inline-back solid-panel" onclick="goToMenu()">← Menu</div></div>
 </div>
 
-<!-- =========================
-     VIEW 5: ATTENDANCE
-========================== -->
+<!-- VIEW 5: ATTENDANCE -->
 <div id="view-attendance" class="view-section">
   <div class="app-wrapper">
     <div class="hanging-sign-wrapper" id="signWrapper"><div class="chain left-chain"></div><div class="chain right-chain"></div><div class="hanging-sign nudge" id="storeSign">SELECT SHOP</div></div>
@@ -330,9 +320,7 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
   <div class="inline-back-wrapper"><div class="inline-back solid-panel" onclick="goToMenu()">← Menu</div></div>
 </div>
 
-<!-- =========================
-     MODALS & OVERLAYS 
-========================== -->
+<!-- MODALS & OVERLAYS -->
 <div id="cameraBackdrop" class="glass-overlay" onclick="stopCamera()"></div>
 <div id="videoContainerWrapper"><video id="cameraVideo" autoplay playsinline muted></video><div id="cameraFlash" class="camera-flash"></div><div class="camera-ui"><button class="single-shutter-btn" id="shutterBtn" onclick="capturePhotoNative()"></button></div></div>
 <div id="photoZoomContainer"><div id="photoZoomBg" class="glass-overlay" onclick="closeZoom()"></div><img id="zoomedImage" src="" onclick="closeZoom()" /></div>
@@ -362,9 +350,7 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
   </div>
 </div>
 
-<!-- =========================
-     JAVASCRIPT CORE
-========================== -->
+<!-- JAVASCRIPT CORE -->
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVy7MbFQmI6fVQM0ti52y05c0rc7-KvqUsU3Uq3WXzJ1CEqYP3vF0noIJbNtuL4nOT/exec";
 
@@ -495,18 +481,28 @@ function prefillProfileFromLocal(id) {
 
 let profileStaffTimer;
 function instantProfileStaffCheck(val) {
-  val = val.trim(); const fieldsEl = document.getElementById('p-step1-fields'), msgEl = document.getElementById('p-staffMsg'); clearTimeout(profileStaffTimer);
-  if (val.length < 2) { fieldsEl.style.display = 'none'; msgEl.innerHTML = ''; return; }
+  val = val.trim(); 
+  const fieldsEl = document.getElementById('p-step1-fields'), msgEl = document.getElementById('p-staffMsg'); 
+  clearTimeout(profileStaffTimer);
+  
+  // LOCK UI INSTANTLY
+  fieldsEl.style.display = 'none'; 
+  
+  if (val.length < 2) { msgEl.innerHTML = ''; return; }
+  
   let match = orderStaffCache.chandarana.find(s => s.id === val) || orderStaffCache.carrefour.find(s => s.id === val);
-  if (match) { populateProfileDetails(match, val); } else {
+  if (match) { 
+      populateProfileDetails(match, val); 
+  } else {
     msgEl.innerHTML = '<span class="btn-spinner" style="width:14px;height:14px;"></span> Searching...'; msgEl.className = 'msg';
+    
     profileStaffTimer = setTimeout(() => {
         fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'fetchUser', id: val }) })
         .then(r => r.json()).then(res => {
             if (document.getElementById('p-id').value.trim() !== val) return;
             if (res.found) { orderStaffCache[res.store].push({id: val, name: res.name, phone: res.phone, branch: res.branch}); Storage.set('order_staff_' + res.store, JSON.stringify(orderStaffCache[res.store])); populateProfileDetails(res, val); } else { fieldsEl.style.display = 'none'; msgEl.innerHTML = 'Invalid ID'; msgEl.className = 'msg error'; }
         }).catch(e => { if (document.getElementById('p-id').value.trim() === val) { fieldsEl.style.display = 'none'; msgEl.innerHTML = 'Network Error'; msgEl.className = 'msg error'; } });
-    }, 600); 
+    }, 400); 
   }
 }
 function populateProfileDetails(match, val) {
@@ -620,23 +616,30 @@ function processStaffMatch(val, match, defaultStore, forcedStore, forcedBranch) 
 
 let orderStaffTimer;
 function instantOrderStaffCheck(val, forcedStore = null, forcedBranch = null) {
-  val = val.trim(); const msgDiv = document.getElementById('o-staffMsg'), nameCont = document.getElementById('o-name-container'), nameInp = document.getElementById('o-name'), expFields = document.getElementById('o-expanded-fields'), lockedSec = document.getElementById('o-locked-section');
+  val = val.trim(); 
+  const msgDiv = document.getElementById('o-staffMsg'), nameCont = document.getElementById('o-name-container'), nameInp = document.getElementById('o-name'), expFields = document.getElementById('o-expanded-fields'), lockedSec = document.getElementById('o-locked-section');
   clearTimeout(orderStaffTimer);
-  if(val.length < 2) { msgDiv.innerHTML = ''; nameInp.value = ''; currentOrderStaffFullname = ''; document.getElementById('o-branch').innerHTML = ''; document.getElementById('o-phone').value = ''; nameCont.style.opacity = '0'; expFields.style.display='none'; lockedSec.classList.remove('unlocked'); if(activeStore) Storage.remove('last_order_id_' + activeStore); return; }
+  
+  // LOCK UI INSTANTLY
+  nameCont.style.opacity = '0'; expFields.style.display = 'none'; lockedSec.classList.remove('unlocked');
+  
+  if(val.length < 2) { msgDiv.innerHTML = ''; nameInp.value = ''; currentOrderStaffFullname = ''; document.getElementById('o-branch').innerHTML = ''; document.getElementById('o-phone').value = ''; if(activeStore) Storage.remove('last_order_id_' + activeStore); return; }
 
   let match = orderStaffCache.chandarana.find(s => s.id === val); let defaultStore = match ? 'chandarana' : null;
   if (!match) { match = orderStaffCache.carrefour.find(s => s.id === val); if (match) defaultStore = 'carrefour'; }
   
-  if(match) { processStaffMatch(val, match, defaultStore, forcedStore, forcedBranch); } 
-  else { 
-    msgDiv.innerHTML = '<span class="btn-spinner" style="width:14px;height:14px;"></span> Searching...'; msgDiv.className = 'msg'; nameCont.style.opacity = '0'; expFields.style.display='none'; lockedSec.classList.remove('unlocked');
+  if(match) { 
+      processStaffMatch(val, match, defaultStore, forcedStore, forcedBranch); 
+  } else { 
+    msgDiv.innerHTML = '<span class="btn-spinner" style="width:14px;height:14px;"></span> Searching...'; msgDiv.className = 'msg';
+    
     orderStaffTimer = setTimeout(() => {
         fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'fetchUser', id: val }) })
         .then(r => r.json()).then(res => {
            if (document.getElementById('o-id').value.trim() !== val) return;
            if (res.found) { orderStaffCache[res.store].push({id: val, name: res.name, phone: res.phone, branch: res.branch, attStatus: res.attStatus, lastTime: res.lastTime, attBranch: res.attBranch}); Storage.set('order_staff_' + res.store, JSON.stringify(orderStaffCache[res.store])); processStaffMatch(val, orderStaffCache[res.store][orderStaffCache[res.store].length-1], res.store, forcedStore, forcedBranch); } else { msgDiv.innerHTML = 'Invalid ID'; msgDiv.className = 'msg error'; }
         }).catch(e => { if (document.getElementById('o-id').value.trim() === val) { msgDiv.innerHTML = 'Network Error'; msgDiv.className = 'msg error'; } });
-    }, 600);
+    }, 400);
   }
 }
 
@@ -818,19 +821,28 @@ document.getElementById('branch').addEventListener('change', () => handleBranchC
 
 let attStaffTimer;
 function handleStaffInput() {
-  const val = document.getElementById('staffID').value.trim(); staffRestrictionError = null; const msgEl = document.getElementById('staffMsg'); clearTimeout(attStaffTimer);
-  if (val.length < 2) { lastValidatedId = ""; resetStepsFrom(3); clearMsg('staffMsg'); return; }
+  const val = document.getElementById('staffID').value.trim(); 
+  staffRestrictionError = null; const msgEl = document.getElementById('staffMsg'); 
+  clearTimeout(attStaffTimer);
+  
+  // LOCK UI INSTANTLY
+  resetStepsFrom(3); 
+  
+  if (val.length < 2) { lastValidatedId = ""; clearMsg('staffMsg'); return; }
   
   const match = orderStaffCache.chandarana.find(s => s.id === val) || orderStaffCache.carrefour.find(s => s.id === val);
-  if (match) { processAttendanceMatch(val, match); } else {
+  if (match) { 
+      processAttendanceMatch(val, match); 
+  } else {
       msgEl.innerHTML = '<span class="btn-spinner" style="width:14px;height:14px;"></span> Verifying...'; msgEl.className = 'msg';
+      
       attStaffTimer = setTimeout(() => {
           fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'fetchUser', id: val }) })
           .then(r => r.json()).then(res => {
               if (document.getElementById('staffID').value.trim() !== val) return;
               if (res.found) { orderStaffCache[res.store].push({id: val, name: res.name, phone: res.phone, branch: res.branch, attStatus: res.attStatus, lastTime: res.lastTime, attBranch: res.attBranch}); Storage.set('order_staff_' + res.store, JSON.stringify(orderStaffCache[res.store])); processAttendanceMatch(val, res); } else { lastValidatedId = ""; resetStepsFrom(3); showError('staffMsg','Invalid Staff ID.'); }
           }).catch(e => { if (document.getElementById('staffID').value.trim() === val) { showError('staffMsg','Network Error'); } });
-      }, 600);
+      }, 400);
   }
 }
 
