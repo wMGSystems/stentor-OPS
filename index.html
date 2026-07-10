@@ -303,7 +303,10 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
       <div id="attMainFormInner" style="display: none; width: 100%;">
         <div class="step-grid">
           <div id="step1" class="step activeStep"><label class="input-label">Branch</label><select id="branch" class="ui-select"><option value="">Loading...</option></select><div id="branchMsg" class="msg"></div></div>
-          <div id="step2" class="step"><label class="input-label">Staff ID</label><input id="staffID" class="ui-input" type="tel" placeholder="Enter ID" autocomplete="off"><div id="staffMsg" class="msg"></div></div>
+          
+          <!-- CRITICAL FIX: oninput="handleStaffInput()" has been added back here -->
+          <div id="step2" class="step"><label class="input-label">Staff ID</label><input id="staffID" class="ui-input" type="tel" placeholder="Enter ID" autocomplete="off" oninput="handleStaffInput()"><div id="staffMsg" class="msg"></div></div>
+          
           <div id="step3" class="step"><label class="input-label">GPS Location</label><button class="btn-primary" onclick="verifyGPS()">Verify</button><div id="gpsMsg" class="msg"></div></div>
           <div id="step4" class="step"><label class="input-label">Identity</label><button class="btn-primary" id="openCameraBtn" onclick="startCamera()">Take Selfie</button><div id="cameraMsg" class="msg"></div></div>
         </div>
@@ -361,7 +364,6 @@ function purgeCacheAtMidnight() {
   var today = new Date().toDateString(); 
   if (Storage.get('cache_date') !== today) {
     Storage.remove('chandarana_portal_data'); Storage.remove('carrefour_portal_data'); Storage.remove('local_att_state'); Storage.set('cache_date', today);
-    // Note: We deliberately KEEP 'order_staff_chandarana' so it remembers users across days for instant loading.
   }
 }
 
@@ -397,7 +399,7 @@ function startWelcomeCycler() {
       if (step < introPhrases.length) {
           centerEl.innerText = introPhrases[step]; centerEl.style.color = colors[step]; centerEl.style.transform = 'scale(0.8)'; centerEl.style.opacity = '0'; void centerEl.offsetWidth; 
           centerEl.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease'; centerEl.style.opacity = '1'; centerEl.style.transform = 'scale(1.1)';
-          introTimeouts.push(setTimeout(() => { if (introSkipped) return; centerEl.style.opacity = '0'; centerEl.style.transform = 'scale(1.4)'; step++; introTimeouts.push(setTimeout(nextIntro, 300)); }, 600)); // Sped up
+          introTimeouts.push(setTimeout(() => { if (introSkipped) return; centerEl.style.opacity = '0'; centerEl.style.transform = 'scale(1.4)'; step++; introTimeouts.push(setTimeout(nextIntro, 300)); }, 600)); 
       } else { startNormalCycle(); }
   }
 
@@ -407,7 +409,7 @@ function startWelcomeCycler() {
       centerEl.style.transition = 'opacity 0.4s ease, color 0.4s ease, transform 0.4s ease'; centerEl.innerText = phrases[i]; centerEl.style.color = normalColors[i]; centerEl.style.transform = 'scale(1)'; centerEl.style.opacity = '1';
       topEl.classList.add('show'); botEl.classList.add('show');
       if (window.welcomeCyclerInterval) clearInterval(window.welcomeCyclerInterval);
-      window.welcomeCyclerInterval = setInterval(() => { centerEl.style.opacity = '0'; centerEl.style.transform = 'scale(0.95)'; setTimeout(() => { i = (i + 1) % phrases.length; centerEl.innerText = phrases[i]; centerEl.style.color = normalColors[i]; centerEl.style.transform = 'scale(1)'; centerEl.style.opacity = '1'; }, 400); }, 1800); // Cycle faster
+      window.welcomeCyclerInterval = setInterval(() => { centerEl.style.opacity = '0'; centerEl.style.transform = 'scale(0.95)'; setTimeout(() => { i = (i + 1) % phrases.length; centerEl.innerText = phrases[i]; centerEl.style.color = normalColors[i]; centerEl.style.transform = 'scale(1)'; centerEl.style.opacity = '1'; }, 400); }, 1800); 
   }
   introTimeouts.push(setTimeout(nextIntro, 150));
 }
@@ -457,9 +459,11 @@ function loadSecureLocalCache() {
     const c = Storage.get('order_staff_chandarana'); if(c) orderStaffCache.chandarana = JSON.parse(c);
     const cr = Storage.get('order_staff_carrefour'); if(cr) orderStaffCache.carrefour = JSON.parse(cr);
   } catch(e){}
-  // WE NO LONGER DOWNLOAD THE FULL DIRECTORY HERE! Maximum Security achieved.
 }
 
+// ==========================================
+// PROFILE LOGIC
+// ==========================================
 function openProfile() {
   switchView('view-profile'); document.body.className = ''; updateBGLayer('layerHub');
   document.getElementById('profileForm').reset(); document.getElementById('p-step1-fields').style.display = 'none'; document.getElementById('p-step1').style.display = 'block'; document.getElementById('p-step2').style.display = 'none'; document.getElementById('p-step3').style.display = 'none'; document.getElementById('p-staffMsg').innerHTML = '';
@@ -493,12 +497,10 @@ function instantProfileStaffCheck(val) {
   
   if (val.length < 2) { msgEl.innerHTML = ''; return; }
   
-  // 1. INSTANT LOCAL CHECK (Feels completely offline if they've used this device before)
   let match = orderStaffCache.chandarana.find(s => s.id === val) || orderStaffCache.carrefour.find(s => s.id === val);
   if (match) { 
       populateProfileDetails(match, val); 
   } else {
-    // 2. NETWORK FETCH (Only for new IDs, wait 250ms so typing isn't lagging)
     msgEl.innerHTML = '<span class="btn-spinner" style="width:14px;height:14px;"></span> Searching...'; msgEl.className = 'msg';
     
     profileStaffTimer = setTimeout(() => {
@@ -635,14 +637,12 @@ function instantOrderStaffCheck(val, forcedStore = null, forcedBranch = null) {
   
   if(val.length < 2) { msgDiv.innerHTML = ''; nameInp.value = ''; currentOrderStaffFullname = ''; document.getElementById('o-branch').innerHTML = ''; document.getElementById('o-phone').value = ''; if(activeStore) Storage.remove('last_order_id_' + activeStore); return; }
 
-  // 1. INSTANT LOCAL CHECK
   let match = orderStaffCache.chandarana.find(s => s.id === val); let defaultStore = match ? 'chandarana' : null;
   if (!match) { match = orderStaffCache.carrefour.find(s => s.id === val); if (match) defaultStore = 'carrefour'; }
   
   if(match) { 
       processStaffMatch(val, match, defaultStore, forcedStore, forcedBranch); 
   } else { 
-    // 2. NETWORK FETCH
     msgDiv.innerHTML = '<span class="btn-spinner" style="width:14px;height:14px;"></span> Searching...'; msgDiv.className = 'msg';
     
     orderStaffTimer = setTimeout(() => {
@@ -657,7 +657,7 @@ function instantOrderStaffCheck(val, forcedStore = null, forcedBranch = null) {
                msgDiv.innerHTML = 'Invalid ID'; msgDiv.className = 'msg error'; 
            }
         }).catch(e => { if (document.getElementById('o-id').value.trim() === val) { msgDiv.innerHTML = 'Network Error'; msgDiv.className = 'msg error'; } });
-    }, 250); // Faster lookup
+    }, 250); 
   }
 }
 
@@ -842,17 +842,18 @@ function handleStaffInput() {
   staffRestrictionError = null; const msgEl = document.getElementById('staffMsg'); 
   clearTimeout(attStaffTimer);
   
-  // LOCK UI INSTANTLY
-  resetStepsFrom(3); 
+  // LOCK UI INSTANTLY IF CHANGED
+  if (val !== lastValidatedId) {
+      resetStepsFrom(3); 
+      lastValidatedId = "";
+  }
   
-  if (val.length < 2) { lastValidatedId = ""; clearMsg('staffMsg'); return; }
+  if (val.length < 2) { clearMsg('staffMsg'); return; }
   
-  // 1. INSTANT LOCAL CHECK
   const match = orderStaffCache.chandarana.find(s => s.id === val) || orderStaffCache.carrefour.find(s => s.id === val);
   if (match) { 
       processAttendanceMatch(val, match); 
   } else {
-      // 2. NETWORK FETCH
       msgEl.innerHTML = '<span class="btn-spinner" style="width:14px;height:14px;"></span> Verifying...'; msgEl.className = 'msg';
       
       attStaffTimer = setTimeout(() => {
@@ -867,7 +868,7 @@ function handleStaffInput() {
                   lastValidatedId = ""; resetStepsFrom(3); showError('staffMsg','Invalid Staff ID.'); 
               }
           }).catch(e => { if (document.getElementById('staffID').value.trim() === val) { showError('staffMsg','Network Error'); } });
-      }, 250); // Faster lookup
+      }, 350); 
   }
 }
 
