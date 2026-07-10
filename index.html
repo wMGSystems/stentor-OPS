@@ -304,7 +304,6 @@ table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: c
         <div class="step-grid">
           <div id="step1" class="step activeStep"><label class="input-label">Branch</label><select id="branch" class="ui-select"><option value="">Loading...</option></select><div id="branchMsg" class="msg"></div></div>
           
-          <!-- CRITICAL FIX: oninput="handleStaffInput()" has been added back here -->
           <div id="step2" class="step"><label class="input-label">Staff ID</label><input id="staffID" class="ui-input" type="tel" placeholder="Enter ID" autocomplete="off" oninput="handleStaffInput()"><div id="staffMsg" class="msg"></div></div>
           
           <div id="step3" class="step"><label class="input-label">GPS Location</label><button class="btn-primary" onclick="verifyGPS()">Verify</button><div id="gpsMsg" class="msg"></div></div>
@@ -378,9 +377,25 @@ if (window.matchMedia) { window.matchMedia('(prefers-color-scheme: dark)').addEv
 let activeStore = null, currentTerminal = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-  updateTime(); setInterval(updateTime, 60000); startWelcomeCycler(); purgeCacheAtMidnight(); fetchPortalDataSilent(); loadSecureLocalCache();
+  updateTime(); setInterval(updateTime, 60000); startWelcomeCycler(); 
+  
+  // THE SILENT SECURITY WIPE - Protects existing users
+  runSecurityWipe();
+  
+  purgeCacheAtMidnight(); fetchPortalDataSilent(); loadSecureLocalCache();
   window.addEventListener('online', () => { checkNetworkStatus(); processAttendanceQueue(); }); window.addEventListener('offline', checkNetworkStatus);
 });
+
+// ==========================================
+// ONE-TIME SECURITY WIPE FOR EXISTING USERS
+// ==========================================
+function runSecurityWipe() {
+  if (Storage.get('security_wipe_v1') !== 'true') {
+    Storage.remove('order_staff_chandarana');
+    Storage.remove('order_staff_carrefour');
+    Storage.set('security_wipe_v1', 'true');
+  }
+}
 
 function startWelcomeCycler() {
   const centerEl = document.getElementById('welcomeMessage'), topEl = document.getElementById('welcomeTop'), botEl = document.getElementById('welcomeBottom');
@@ -850,10 +865,12 @@ function handleStaffInput() {
   
   if (val.length < 2) { clearMsg('staffMsg'); return; }
   
+  // 1. INSTANT LOCAL CHECK
   const match = orderStaffCache.chandarana.find(s => s.id === val) || orderStaffCache.carrefour.find(s => s.id === val);
   if (match) { 
       processAttendanceMatch(val, match); 
   } else {
+      // 2. NETWORK FETCH
       msgEl.innerHTML = '<span class="btn-spinner" style="width:14px;height:14px;"></span> Verifying...'; msgEl.className = 'msg';
       
       attStaffTimer = setTimeout(() => {
@@ -868,7 +885,7 @@ function handleStaffInput() {
                   lastValidatedId = ""; resetStepsFrom(3); showError('staffMsg','Invalid Staff ID.'); 
               }
           }).catch(e => { if (document.getElementById('staffID').value.trim() === val) { showError('staffMsg','Network Error'); } });
-      }, 350); 
+      }, 250); // Faster lookup
   }
 }
 
