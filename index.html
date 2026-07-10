@@ -1231,8 +1231,8 @@ function openOrder() {
   }
 }
 
-function switchTerminalOrder(store, preventCheck = false) {
-  if (activeStore && activeStore !== store) { orderStoreState[activeStore].id = document.getElementById('o-id').value; saveOrderState(); }
+function switchTerminalOrder(store) {
+  if (activeStore) { orderStoreState[activeStore].id = document.getElementById('o-id').value; saveOrderState(); }
   activeStore = store; 
   Storage.set('selected_terminal', store);
   
@@ -1244,12 +1244,8 @@ function switchTerminalOrder(store, preventCheck = false) {
   document.getElementById('orderFormInner').style.display = 'block';
 
   renderDynamicOrderContent(); restoreOrderState();
-  if (!preventCheck) {
-    let currentId = document.getElementById('o-id').value;
-    let savedId = currentId || orderStoreState[store].id || Storage.get('last_order_id_' + store) || '';
-    document.getElementById('o-id').value = savedId;
-    instantOrderStaffCheck(savedId, store);
-  }
+  let savedId = orderStoreState[store].id || Storage.get('last_order_id_' + store) || '';
+  document.getElementById('o-id').value = savedId; instantOrderStaffCheck(savedId);
 }
 
 function loadOrderStaffBackground() {
@@ -1310,8 +1306,7 @@ function processStaffMatch(val, match, defaultStore, forcedStore, forcedBranch) 
   if (clockedInStore && clockedInBranch) { targetStore = clockedInStore; targetBranch = clockedInBranch; isAttendanceVerified = true; if (targetStore !== defaultStore || targetBranch !== match.branch) relievedMsg = ' (Auto-detected)'; }
   if (forcedBranch && forcedStore) { targetStore = forcedStore; targetBranch = forcedBranch; isAttendanceVerified = false; relievedMsg = ''; }
 
-  // FIX: Prevent UI infinite bounce-backs between shops when manually overriding branch dropdowns
-  if (targetStore !== activeStore) { switchTerminalOrder(targetStore, true); }
+  if (targetStore !== activeStore) { switchTerminalOrder(targetStore); }
 
   Storage.set('last_order_id_' + activeStore, val); 
   const msgDiv = document.getElementById('o-staffMsg'), nameInp = document.getElementById('o-name'), nameCont = document.getElementById('o-name-container'), expFields = document.getElementById('o-expanded-fields'), lockedSec = document.getElementById('o-locked-section');
@@ -1468,7 +1463,7 @@ function downloadReceipt(btn) {
 async function confirmAndSendOrder() {
   const btn = document.getElementById('confirmSendBtn'); btn.disabled = true; btn.innerHTML = 'Wait...';
   try {
-    const targetSheet = activeStore;
+    const targetSheet = activeStore === 'chandarana' ? 'Chandarana' : 'Carrefour';
     
     // Smart Duplicate Append Logic Locally
     const todayKey = `order_sent_${new Date().toDateString()}_${pendingOrderPayload["ID NO."]}_${activeStore}`;
